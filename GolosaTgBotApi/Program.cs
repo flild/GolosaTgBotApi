@@ -11,7 +11,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddDbContext<MariaContext>(options =>
 {
     options.UseMySql(
-        builder.Configuration.GetConnectionString("MariaDbConnection"),
+        Environment.GetEnvironmentVariable("DATABASE_CONNECTION_STRING"),
         ServerVersion.Parse("11.4.4-mariadb"));
 });
 // Add services to the container.
