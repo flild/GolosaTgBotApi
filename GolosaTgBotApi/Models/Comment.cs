@@ -2,20 +2,29 @@
 {
     public class Comment
     {
+        // Идентификаторы
         public long Id { get; set; } // Уникальный идентификатор комментария
-        public int TelegramID { get; set; }
-        public long? PostId { get; set; } // ID поста
-        public long UserId { get; set; } // ID пользователя
-        public long? ParentId { get; set; } // ID рrодительского комментария (если есть)
-        public bool IsDelete { get; set; } = false;
+        public int TelegramId { get; set; }
+        public long? ParentId { get; set; } // ID родительского комментария (если есть)
+        public int? MessageThreadId { get; set; }
         public long ChanelId { get; set; }
-        public string Content { get; set; } // Текст комментария
+
+        // Данные о пользователе
+        public long UserId { get; set; } // ID пользователя
+
+        // Флаги
+        public bool IsPost { get; set; } = false;
+        public bool IsDelete { get; set; } = false;
+
+        // Содержимое
+        public string Text { get; set; } // Текст комментария
+
+        // Временные метки
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow; // Дата создания
 
         // Навигационные свойства
         public ICollection<Comment> Replies { get; set; } // Ответы на комментарий
         public User User { get; set; }
-        public Post Post { get; set; }
         public Comment Parent { get; set; }
     }
 }

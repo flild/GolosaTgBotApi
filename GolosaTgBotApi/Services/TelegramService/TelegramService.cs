@@ -9,17 +9,18 @@ namespace GolosaTgBotApi.Services.TelegramService
 {
     public class TelegramService: BackgroundService
     {
-        private readonly ITelegramBotClient bot = new TelegramBotClient(Environment.GetEnvironmentVariable("TELEGRAM_BOT_API_KEY"));
+        private readonly ITelegramBotClient bot;
         private readonly Channel<Message> _messageChannel;
 
         public TelegramService(Channel<Message> messageChannel)
         {
             Env.Load();
+            bot = new TelegramBotClient(Environment.GetEnvironmentVariable("TELEGRAM_BOT_API_KEY"));
             _messageChannel = messageChannel;
         }
         public async Task HandleUpdateAsync(ITelegramBotClient botClient, Update update, CancellationToken cancellationToken)
         {
-            if (update.Type == Telegram.Bot.Types.Enums.UpdateType.Message)
+            if (update.Type == Telegram.Bot.Types.Enums.UpdateType.Message && update.Message.ReplyToMessage != null)
             {
                 await _messageChannel.Writer.WriteAsync(update.Message);
             }
