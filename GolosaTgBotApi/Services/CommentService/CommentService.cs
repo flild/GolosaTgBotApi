@@ -46,6 +46,7 @@ namespace GolosaTgBotApi.Services.CommentService
                 UserId = message.From.Id,
                 Text = message.Text,
                 CreatedAt = DateTime.UtcNow
+
             };
             if (message.From.Id == systemId)
             {
