@@ -8,6 +8,7 @@ namespace GolosaTgBotApi.Data
         public DbSet<User> Users { get; set; }
         public DbSet<Post> Posts { get; set; }
         public DbSet<Comment> Comments { get; set; }
+        public DbSet<Channel> Channels { get; set; }
         public MariaContext(DbContextOptions<MariaContext> options): base(options)
         {
         }
@@ -16,10 +17,11 @@ namespace GolosaTgBotApi.Data
         {
             // Настройка связи комментариев с родительскими комментариями
             modelBuilder.Entity<Comment>()
-                .HasOne(c => c.Parent) // Указание на отсутствие явного навигационного свойства
-                .WithMany(c => c.Replies) // Связь с коллекцией дочерних комментариев
-                .HasForeignKey(c => c.ParentId) // Внешний ключ для связи
-                .OnDelete(DeleteBehavior.Restrict); // Запрещаем каскадное удаление
+                .HasOne(c => c.Parent) // Указываем навигационное свойство для родителя
+                .WithMany(c => c.Replies) // Указываем навигационное свойство для дочерних комментариев
+                .HasForeignKey(c => new { c.ParentId, c.ChannelId }) // Составной внешний ключ (ParentId + ChannelId)
+                .HasPrincipalKey(c => new { c.TelegramId, c.ChannelId }) // Составной ключ для связи (TelegramId + ChannelId)
+                .OnDelete(DeleteBehavior.Restrict);
 
             // Настройка связи комментариев и пользователей
             modelBuilder.Entity<Comment>()
@@ -28,18 +30,14 @@ namespace GolosaTgBotApi.Data
                 .HasForeignKey(c => c.UserId)
                 .OnDelete(DeleteBehavior.Restrict);
 
-            // Настройка связи комментариев и постов
-            modelBuilder.Entity<Comment>()
-                .HasOne(c => c.Post)
-                .WithMany(p => p.Comments)
-                .HasForeignKey(c => c.PostId)
-                .OnDelete(DeleteBehavior.Restrict);
 
             modelBuilder.Entity<Comment>()
                 .HasIndex(c => c.Id);
             modelBuilder.Entity<Post>()
                .HasIndex(c => c.Id);
             modelBuilder.Entity<User>()
+               .HasIndex(c => c.Id);
+            modelBuilder.Entity<Channel>()
                .HasIndex(c => c.Id);
         }
     }

@@ -1,16 +1,17 @@
-﻿namespace GolosaTgBotApi.Models
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace GolosaTgBotApi.Models
 {
     public class Post
     {
+        [Key]
         public long Id { get; set; } // Уникальный идентификатор поста
+        public int postId { get; set; }
         public int InChatId { get; set; }
-        public string Content { get; set; } // Текст поста
+        public string? Text { get; set; } // Текст поста
         public bool IsDelete { get; set; } = false;
-        //todo нужно реверсивно проставлять, когда приходит соо в чате о посте
-        public long ChanelId { get; set; }
+        public long ChannelId { get; set; }
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow; // Дата публикации
 
-        // Связь с комментариями
-        public ICollection<Comment> Comments { get; set; }
     }
 }

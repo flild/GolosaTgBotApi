@@ -1,13 +1,16 @@
-﻿namespace GolosaTgBotApi.Models
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace GolosaTgBotApi.Models
 {
     public class Comment
     {
         // Идентификаторы
+        [Key]
         public long Id { get; set; } // Уникальный идентификатор комментария
         public int TelegramId { get; set; }
-        public long? ParentId { get; set; } // ID родительского комментария (если есть)
+        public int? ParentId { get; set; } // ID родительского комментария (если есть)
         public int? MessageThreadId { get; set; }
-        public long ChanelId { get; set; }
+        public long ChannelId { get; set; }
 
         // Данные о пользователе
         public long UserId { get; set; } // ID пользователя

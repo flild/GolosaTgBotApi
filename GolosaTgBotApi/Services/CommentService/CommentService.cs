@@ -1,62 +1,83 @@
 ﻿
 using GolosaTgBotApi.Models;
+using GolosaTgBotApi.Services.ChannelService;
 using GolosaTgBotApi.Services.MariaService;
+using GolosaTgBotApi.Services.PostService;
 using GolosaTgBotApi.Services.UserService;
-using System;
-using System.Threading;
 using System.Threading.Channels;
-using System.Threading.Tasks;
 using Telegram.Bot.Types;
 
 namespace GolosaTgBotApi.Services.CommentService
 {
-    public class CommentService : BackgroundService
+    public class CommentService : ICommentService
     {
-        private readonly Channel<Message> _channel;
-        private readonly IServiceProvider _serviceProvider;
+        private readonly IMariaService _mariaService;
+        private readonly IUserService _userService;
+        private readonly IChannelService _channelService;
+        private readonly IPostService _postService;
+        private readonly ILogger<CommentService> _logger;
 
-        public CommentService(Channel<Message> channel, IServiceProvider serviceProvider)
+        private const int systemId = 777000;
+
+        public CommentService(ILogger<CommentService> logger,
+                              IMariaService mariadbService,
+                              IUserService userService,
+                              IChannelService channelService,
+                              IPostService PostService)
         {
-            _channel = channel;
-            _serviceProvider = serviceProvider;
+            _mariaService = mariadbService;
+            _userService = userService;
+            _channelService = channelService;
+            _postService = PostService;
+            _logger = logger;
         }
-
-        protected override async Task ExecuteAsync(CancellationToken stoppingToken)
+        public async Task HandleComment(Message message)
         {
+            if (message.Chat.Id > 0)
             {
-                // Чтение сообщений из канала в бесконечном цикле
-                await foreach (var message in _channel.Reader.ReadAllAsync(stoppingToken))
+                return;
+            }
+            var comment = new Comment
+            {
+                TelegramId = message.Id,
+                ParentId = message.ReplyToMessage?.MessageId,
+                ChannelId = message.Chat.Id,
+                MessageThreadId = message.MessageThreadId,
+                UserId = message.From.Id,
+                Text = message.Text,
+                CreatedAt = DateTime.UtcNow
+            };
+            if (message.From.Id == systemId)
+            {
+                comment.IsPost = true;
+                 await _postService.LinkPostAndMessage(message.ForwardFromMessageId, message.Id, message.Chat.Id);
+            }
+            try
+            {
+                // Retrieve user from the database
+                var user = await _mariaService.GetUserbyIdAsync(message.From.Id);
+                if (user == null)
                 {
-
-                    using var scope = _serviceProvider.CreateScope();
-                    var mariadbService = scope.ServiceProvider.GetRequiredService<IMariaService>();
-                    var userService = scope.ServiceProvider.GetRequiredService<IUserService>;
-                    Console.WriteLine(Newtonsoft.Json.JsonConvert.SerializeObject(message));
-                    if (message.Chat.Id > 0)
-                    {
-                        return;
-                    }
-                    var comment = new Comment();
-                    //ids
-                    comment.TelegramId = message.Id;
-                    comment.IsPost = message.From.Id == 777000;
-                    comment.ParentId = message.ReplyToMessage?.MessageId;
-                    comment.ChanelId = message.SenderChat.Id;
-                    comment.MessageThreadId = message.MessageThreadId;
-                    comment.UserId = message.From.Id;
-                    //content
-                    comment.Text = message.Text;
-                    comment.CreatedAt = DateTime.Now;
-                    var user = mariadbService.GetUserbyIdAsync(message.From.Id);
-                    if(user == null)
-                    {
-                        userService.CreateNewUser();
-
-                    }
-                    // Обработка сообщения и сохранение в базу данных
-                    // await mariadbService.SaveCommentAsync(message);
+                    await _userService.CreateNewUser(message.From);
                 }
+
+                // Retrieve channel from the database
+                await _channelService.CheckOnChannelExisting(message.Chat.Id);
+
+                // Save the comment to the database
+                await _mariaService.SaveCommentAsync(comment);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error processing message with ID {MessageId}", message.Id);
+                // Handle the exception as appropriate
             }
         }
+        private async Task HandleAutoComment(Comment comment)
+        {
+            
+
+        }
     }
+
 }
