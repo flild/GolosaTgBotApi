@@ -4,6 +4,7 @@ using GolosaTgBotApi.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace GolosaTgBotApi.Migrations
 {
     [DbContext(typeof(MariaContext))]
-    partial class MariaContextModelSnapshot : ModelSnapshot
+    [Migration("20250108140635_initial")]
+    partial class initial
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -56,6 +59,9 @@ namespace GolosaTgBotApi.Migrations
 
                     MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<long>("Id"));
 
+                    b.Property<long?>("ChannelId")
+                        .HasColumnType("bigint");
+
                     b.Property<long>("ChatId")
                         .HasColumnType("bigint");
 
@@ -85,6 +91,8 @@ namespace GolosaTgBotApi.Migrations
                         .HasColumnType("bigint");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("ChannelId");
 
                     b.HasIndex("ChatId");
 
@@ -184,6 +192,10 @@ namespace GolosaTgBotApi.Migrations
 
             modelBuilder.Entity("GolosaTgBotApi.Models.Comment", b =>
                 {
+                    b.HasOne("GolosaTgBotApi.Models.Channel", null)
+                        .WithMany("Comments")
+                        .HasForeignKey("ChannelId");
+
                     b.HasOne("GolosaTgBotApi.Models.LinkedChat", "LinkedChat")
                         .WithMany("Comments")
                         .HasForeignKey("ChatId")
@@ -230,6 +242,8 @@ namespace GolosaTgBotApi.Migrations
 
             modelBuilder.Entity("GolosaTgBotApi.Models.Channel", b =>
                 {
+                    b.Navigation("Comments");
+
                     b.Navigation("LinkedChat")
                         .IsRequired();
 

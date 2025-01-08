@@ -2,6 +2,7 @@
 using GolosaTgBotApi.Data;
 using GolosaTgBotApi.Models;
 using Microsoft.EntityFrameworkCore;
+using System.Threading;
 using Telegram.Bot.Types;
 
 namespace GolosaTgBotApi.Services.MariaService
@@ -24,8 +25,18 @@ namespace GolosaTgBotApi.Services.MariaService
         {
             // Получить комментарий из определенного чата с Id
             var comment = await _db.Comments
-                .FirstOrDefaultAsync(c => c.ChannelId == chatId && c.TelegramId == commentTlgId);
+                .FirstOrDefaultAsync(c => c.ChatId == chatId && c.TelegramId == commentTlgId);
             return comment;
+        }
+        public async Task<List<Comment>> GetCommentsByTreadId(int treadId, long chatId, int limit, int offset)
+        {
+            var comments = await _db.Comments
+                .Where(c => c.MessageThreadId == treadId && c.ChatId == chatId && !c.IsPost)
+                .OrderBy(c => c.CreatedAt)
+                .Skip(offset)
+                .Take(limit)
+                .ToListAsync();
+            return comments;
         }
         public async Task<Models.User?> GetUserbyIdAsync(long userId)
         {
@@ -53,6 +64,10 @@ namespace GolosaTgBotApi.Services.MariaService
         {
             _db.Posts.Add(post);
             await _db.SaveChangesAsync();
+        }
+        public async Task<Post> GetPostById(long id)
+        {
+            return await _db.Posts.FirstOrDefaultAsync(p => p.Id == id);
         }
         public async Task UpdatePostInChatId(Post post)
         {

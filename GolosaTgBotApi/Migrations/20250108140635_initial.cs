@@ -7,7 +7,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace GolosaTgBotApi.Migrations
 {
     /// <inheritdoc />
-    public partial class v1 : Migration
+    public partial class initial : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -39,6 +39,7 @@ namespace GolosaTgBotApi.Migrations
                     Id = table.Column<long>(type: "bigint", nullable: false)
                         .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
                     OwnerId = table.Column<long>(type: "bigint", nullable: true),
+                    LinkedChatId = table.Column<long>(type: "bigint", nullable: true),
                     UserId = table.Column<long>(type: "bigint", nullable: true)
                 },
                 constraints: table =>
@@ -53,44 +54,24 @@ namespace GolosaTgBotApi.Migrations
                 .Annotation("MySql:CharSet", "utf8mb4");
 
             migrationBuilder.CreateTable(
-                name: "Comments",
+                name: "LinkedChat",
                 columns: table => new
                 {
                     Id = table.Column<long>(type: "bigint", nullable: false)
                         .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
-                    TelegramId = table.Column<int>(type: "int", nullable: false),
-                    ParentId = table.Column<int>(type: "int", nullable: true),
-                    MessageThreadId = table.Column<int>(type: "int", nullable: true),
-                    ChannelId = table.Column<long>(type: "bigint", nullable: false),
-                    UserId = table.Column<long>(type: "bigint", nullable: false),
-                    IsPost = table.Column<bool>(type: "tinyint(1)", nullable: false),
-                    IsDelete = table.Column<bool>(type: "tinyint(1)", nullable: false),
-                    Text = table.Column<string>(type: "longtext", nullable: false)
+                    Name = table.Column<string>(type: "longtext", nullable: true)
                         .Annotation("MySql:CharSet", "utf8mb4"),
-                    CreatedAt = table.Column<DateTime>(type: "datetime(6)", nullable: false)
+                    ChannelID = table.Column<long>(type: "bigint", nullable: true)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Comments", x => x.Id);
-                    table.UniqueConstraint("AK_Comments_TelegramId_ChannelId", x => new { x.TelegramId, x.ChannelId });
+                    table.PrimaryKey("PK_LinkedChat", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_Comments_Channels_ChannelId",
-                        column: x => x.ChannelId,
+                        name: "FK_LinkedChat_Channels_ChannelID",
+                        column: x => x.ChannelID,
                         principalTable: "Channels",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
-                    table.ForeignKey(
-                        name: "FK_Comments_Comments_ParentId_ChannelId",
-                        columns: x => new { x.ParentId, x.ChannelId },
-                        principalTable: "Comments",
-                        principalColumns: new[] { "TelegramId", "ChannelId" },
-                        onDelete: ReferentialAction.Restrict);
-                    table.ForeignKey(
-                        name: "FK_Comments_Users_UserId",
-                        column: x => x.UserId,
-                        principalTable: "Users",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
                 })
                 .Annotation("MySql:CharSet", "utf8mb4");
 
@@ -120,6 +101,54 @@ namespace GolosaTgBotApi.Migrations
                 })
                 .Annotation("MySql:CharSet", "utf8mb4");
 
+            migrationBuilder.CreateTable(
+                name: "Comments",
+                columns: table => new
+                {
+                    Id = table.Column<long>(type: "bigint", nullable: false)
+                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
+                    TelegramId = table.Column<int>(type: "int", nullable: false),
+                    ParentId = table.Column<int>(type: "int", nullable: true),
+                    MessageThreadId = table.Column<int>(type: "int", nullable: true),
+                    ChatId = table.Column<long>(type: "bigint", nullable: false),
+                    UserId = table.Column<long>(type: "bigint", nullable: false),
+                    IsPost = table.Column<bool>(type: "tinyint(1)", nullable: false),
+                    IsDelete = table.Column<bool>(type: "tinyint(1)", nullable: false),
+                    Text = table.Column<string>(type: "longtext", nullable: false)
+                        .Annotation("MySql:CharSet", "utf8mb4"),
+                    CreatedAt = table.Column<DateTime>(type: "datetime(6)", nullable: false),
+                    ChannelId = table.Column<long>(type: "bigint", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Comments", x => x.Id);
+                    table.UniqueConstraint("AK_Comments_TelegramId_ChatId", x => new { x.TelegramId, x.ChatId });
+                    table.ForeignKey(
+                        name: "FK_Comments_Channels_ChannelId",
+                        column: x => x.ChannelId,
+                        principalTable: "Channels",
+                        principalColumn: "Id");
+                    table.ForeignKey(
+                        name: "FK_Comments_Comments_ParentId_ChatId",
+                        columns: x => new { x.ParentId, x.ChatId },
+                        principalTable: "Comments",
+                        principalColumns: new[] { "TelegramId", "ChatId" },
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_Comments_LinkedChat_ChatId",
+                        column: x => x.ChatId,
+                        principalTable: "LinkedChat",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_Comments_Users_UserId",
+                        column: x => x.UserId,
+                        principalTable: "Users",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                })
+                .Annotation("MySql:CharSet", "utf8mb4");
+
             migrationBuilder.CreateIndex(
                 name: "IX_Channels_Id",
                 table: "Channels",
@@ -136,19 +165,30 @@ namespace GolosaTgBotApi.Migrations
                 column: "ChannelId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_Comments_ChatId",
+                table: "Comments",
+                column: "ChatId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Comments_Id",
                 table: "Comments",
                 column: "Id");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Comments_ParentId_ChannelId",
+                name: "IX_Comments_ParentId_ChatId",
                 table: "Comments",
-                columns: new[] { "ParentId", "ChannelId" });
+                columns: new[] { "ParentId", "ChatId" });
 
             migrationBuilder.CreateIndex(
                 name: "IX_Comments_UserId",
                 table: "Comments",
                 column: "UserId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_LinkedChat_ChannelID",
+                table: "LinkedChat",
+                column: "ChannelID",
+                unique: true);
 
             migrationBuilder.CreateIndex(
                 name: "IX_Posts_ChannelId",
@@ -174,6 +214,9 @@ namespace GolosaTgBotApi.Migrations
 
             migrationBuilder.DropTable(
                 name: "Posts");
+
+            migrationBuilder.DropTable(
+                name: "LinkedChat");
 
             migrationBuilder.DropTable(
                 name: "Channels");

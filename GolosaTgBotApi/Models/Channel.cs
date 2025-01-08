@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
+
 namespace GolosaTgBotApi.Models
 {
     public class Channel
@@ -7,7 +8,8 @@ namespace GolosaTgBotApi.Models
         [Key]
         public long Id { get; set; }
         public long? OwnerId {  get; set; }
-        public ICollection<Comment>? Comments { get; set; }
+        public long? LinkedChatId { get; set; }
+        public LinkedChat LinkedChat { get; set; }
         public ICollection<Post>? Posts { get; set; }
     }
 }

@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace GolosaTgBotApi.Migrations
 {
     [DbContext(typeof(MariaContext))]
-    [Migration("20250106183200_v1")]
+    [Migration("20250108143914_v1")]
     partial class v1
     {
         /// <inheritdoc />
@@ -32,6 +32,9 @@ namespace GolosaTgBotApi.Migrations
                         .HasColumnType("bigint");
 
                     MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<long>("Id"));
+
+                    b.Property<long?>("LinkedChatId")
+                        .HasColumnType("bigint");
 
                     b.Property<long?>("OwnerId")
                         .HasColumnType("bigint");
@@ -56,7 +59,7 @@ namespace GolosaTgBotApi.Migrations
 
                     MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<long>("Id"));
 
-                    b.Property<long>("ChannelId")
+                    b.Property<long>("ChatId")
                         .HasColumnType("bigint");
 
                     b.Property<DateTime>("CreatedAt")
@@ -86,15 +89,37 @@ namespace GolosaTgBotApi.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("ChannelId");
+                    b.HasIndex("ChatId");
 
                     b.HasIndex("Id");
 
                     b.HasIndex("UserId");
 
-                    b.HasIndex("ParentId", "ChannelId");
+                    b.HasIndex("ParentId", "ChatId");
 
                     b.ToTable("Comments");
+                });
+
+            modelBuilder.Entity("GolosaTgBotApi.Models.LinkedChat", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<long>("Id"));
+
+                    b.Property<long?>("ChannelID")
+                        .HasColumnType("bigint");
+
+                    b.Property<string>("Name")
+                        .HasColumnType("longtext");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ChannelID")
+                        .IsUnique();
+
+                    b.ToTable("LinkedChat");
                 });
 
             modelBuilder.Entity("GolosaTgBotApi.Models.Post", b =>
@@ -162,9 +187,9 @@ namespace GolosaTgBotApi.Migrations
 
             modelBuilder.Entity("GolosaTgBotApi.Models.Comment", b =>
                 {
-                    b.HasOne("GolosaTgBotApi.Models.Channel", null)
+                    b.HasOne("GolosaTgBotApi.Models.LinkedChat", "LinkedChat")
                         .WithMany("Comments")
-                        .HasForeignKey("ChannelId")
+                        .HasForeignKey("ChatId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
@@ -176,13 +201,25 @@ namespace GolosaTgBotApi.Migrations
 
                     b.HasOne("GolosaTgBotApi.Models.Comment", "Parent")
                         .WithMany("Replies")
-                        .HasForeignKey("ParentId", "ChannelId")
-                        .HasPrincipalKey("TelegramId", "ChannelId")
+                        .HasForeignKey("ParentId", "ChatId")
+                        .HasPrincipalKey("TelegramId", "ChatId")
                         .OnDelete(DeleteBehavior.Restrict);
+
+                    b.Navigation("LinkedChat");
 
                     b.Navigation("Parent");
 
                     b.Navigation("User");
+                });
+
+            modelBuilder.Entity("GolosaTgBotApi.Models.LinkedChat", b =>
+                {
+                    b.HasOne("GolosaTgBotApi.Models.Channel", "Channel")
+                        .WithOne("LinkedChat")
+                        .HasForeignKey("GolosaTgBotApi.Models.LinkedChat", "ChannelID")
+                        .OnDelete(DeleteBehavior.Cascade);
+
+                    b.Navigation("Channel");
                 });
 
             modelBuilder.Entity("GolosaTgBotApi.Models.Post", b =>
@@ -196,7 +233,8 @@ namespace GolosaTgBotApi.Migrations
 
             modelBuilder.Entity("GolosaTgBotApi.Models.Channel", b =>
                 {
-                    b.Navigation("Comments");
+                    b.Navigation("LinkedChat")
+                        .IsRequired();
 
                     b.Navigation("Posts");
                 });
@@ -204,6 +242,11 @@ namespace GolosaTgBotApi.Migrations
             modelBuilder.Entity("GolosaTgBotApi.Models.Comment", b =>
                 {
                     b.Navigation("Replies");
+                });
+
+            modelBuilder.Entity("GolosaTgBotApi.Models.LinkedChat", b =>
+                {
+                    b.Navigation("Comments");
                 });
 
             modelBuilder.Entity("GolosaTgBotApi.Models.User", b =>

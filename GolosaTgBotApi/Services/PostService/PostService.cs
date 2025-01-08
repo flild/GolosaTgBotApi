@@ -1,4 +1,5 @@
 ﻿using GolosaTgBotApi.Models;
+using GolosaTgBotApi.Models.Dtos;
 using GolosaTgBotApi.Services.ChannelService;
 using GolosaTgBotApi.Services.MariaService;
 using Telegram.Bot.Types;
@@ -33,6 +34,13 @@ namespace GolosaTgBotApi.Services.PostService
             {
                 Console.WriteLine(ex);
             }
+        }
+        public async Task<PostWithCommentsDto> GetPostWithComments(long postId, int commentCount)
+        {
+            var post  = await _mariaService.GetPostById(postId);
+            //как чат то узнать?
+            //var comments = await _mariaService.GetCommentsByTreadId(post.InChatId,post.)
+            return new PostWithCommentsDto();
         }
 
         public async Task LinkPostAndMessage(int? postId, int postIdInChat, long ChatId)

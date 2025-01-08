@@ -10,7 +10,7 @@ namespace GolosaTgBotApi.Models
         public int TelegramId { get; set; }
         public int? ParentId { get; set; } // ID родительского комментария (если есть)
         public int? MessageThreadId { get; set; }
-        public long ChannelId { get; set; }
+        public long ChatId { get; set; }
 
         // Данные о пользователе
         public long UserId { get; set; } // ID пользователя
@@ -29,5 +29,6 @@ namespace GolosaTgBotApi.Models
         public ICollection<Comment> Replies { get; set; } // Ответы на комментарий
         public User User { get; set; }
         public Comment Parent { get; set; }
+        public LinkedChat LinkedChat { get; set; }
     }
 }
