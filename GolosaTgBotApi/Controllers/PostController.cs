@@ -20,9 +20,9 @@ namespace GolosaTgBotApi.Controllers
 
         // GET: api/Post/{postId}
         [HttpGet("{postId}")]
-        public async Task<ActionResult<PostWithCommentsDto>> GetPostWithComments(long postId)
+        public async Task<ActionResult<PostDto>> GetPostWithComments(long postId)
         {
-            var post = _postService.GetPostWithComments(postId, 3);
+            var post = _postService.GetPosts(postId, 3);
 
 
 

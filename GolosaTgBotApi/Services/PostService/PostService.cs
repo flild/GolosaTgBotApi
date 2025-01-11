@@ -35,12 +35,40 @@ namespace GolosaTgBotApi.Services.PostService
                 Console.WriteLine(ex);
             }
         }
-        public async Task<PostWithCommentsDto> GetPostWithComments(long postId, int commentCount)
+        public async Task<List<PostDto>> GetPosts(int limit, int offset)
         {
-            var post  = await _mariaService.GetPostById(postId);
-            //как чат то узнать?
-            //var comments = await _mariaService.GetCommentsByTreadId(post.InChatId,post.)
-            return new PostWithCommentsDto();
+            var posts = await _mariaService.GetLatestsPosts(limit, offset);
+            var Channels = await _mariaService.GetChannelsByIds(posts.Select(p => p.ChannelId).ToList());
+            var chatsOfThreadIds = new Dictionary<long, List<int>>();
+            foreach (var post in posts) 
+            {
+                var chatId = Channels.First(ch => ch.Id == post.ChannelId).LinkedChatId??0;
+                if (chatId == 0)
+                    continue;
+                if (!chatsOfThreadIds.ContainsKey(chatId))
+                {
+                    chatsOfThreadIds[chatId] = new List<int>();
+                }
+                chatsOfThreadIds[chatId].Add(post.InChatId);
+            }
+            var CommentsCountDict = await _mariaService.GetCommentCountByIds(chatsOfThreadIds);
+            var result = new List<PostDto>();
+            foreach (var post in posts)
+            {
+                var channel = Channels.First(ch => ch.Id == post.ChannelId);
+                if (channel.LinkedChat == null)
+                    continue;
+                var postDto = new PostDto
+                {
+                    Channel = channel,
+                    CommentCount = CommentsCountDict[post.InChatId],
+                    Post = post,
+                };
+                result.Add(postDto);
+            }
+
+
+            return result;
         }
 
         public async Task LinkPostAndMessage(int? postId, int postIdInChat, long ChatId)
