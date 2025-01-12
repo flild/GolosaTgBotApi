@@ -1,6 +1,7 @@
 @GolosaTgBotApi_HostAddress = http://localhost:5193
 
-GET {{GolosaTgBotApi_HostAddress}}/weatherforecast/
+GET {{GolosaTgBotApi_HostAddress}}/api/post
+Content-Type: application/json
 Accept: application/json
 
 ###
