@@ -39,25 +39,22 @@ namespace GolosaTgBotApi.Services.MariaService
                 .ToListAsync();
             return comments;
         }
-        public async Task<Dictionary<int, int>> GetCommentCountByIds(Dictionary<long, List<int>> chatsOfThreadIds)
+        public async Task<Dictionary<(long ChatId, int ThreadId), int>> GetCommentCountByIds(Dictionary<long, HashSet<int>> chatsOfThreadIds)
         {
-            // Собираем все пары (chatId, threadId) для удобного поиска
+            // Собираем пары (ChatId, ThreadId)
             var threadPairs = chatsOfThreadIds
                 .SelectMany(chat => chat.Value.Select(threadId => new { ChatId = chat.Key, ThreadId = threadId }))
-                .ToHashSet();
+                .ToList();
 
-            // Получаем количество комментариев для каждой пары (chatId, threadId)
+            // Запрос к БД с учётом ChatId и ThreadId
             var commentCounts = await _db.Comments
-                .Where(c => c.MessageThreadId.HasValue && threadPairs.Contains(new { ChatId = c.Id, ThreadId = c.MessageThreadId.Value }))
-                .GroupBy(c => c.MessageThreadId.Value)
-                .Select(g => new { ThreadId = g.Key, CommentCount = g.Count() })
-                .ToDictionaryAsync(x => x.ThreadId, x => x.CommentCount);
+                .Where(c => c.MessageThreadId.HasValue &&
+                            threadPairs.Any(p => p.ChatId == c.Id && p.ThreadId == c.MessageThreadId.Value))
+                .GroupBy(c => new { ChatId = c.Id, ThreadId = c.MessageThreadId.Value })
+                .Select(g => new { g.Key.ChatId, g.Key.ThreadId, CommentCount = g.Count() })
+                .ToDictionaryAsync(x => (x.ChatId, x.ThreadId), x => x.CommentCount);
 
-            // Создаём финальный словарь с подсчётом комментариев или 0, если нет комментариев
-            return chatsOfThreadIds
-                .SelectMany(chat => chat.Value)
-                .Distinct()
-                .ToDictionary(tid => tid, tid => commentCounts.GetValueOrDefault(tid, 0));
+            return commentCounts;
         }
         public async Task<Models.User?> GetUserbyIdAsync(long userId)
         {
@@ -72,11 +69,11 @@ namespace GolosaTgBotApi.Services.MariaService
         {
             return await _db.Channels.FirstOrDefaultAsync(c => c.Id == ChannelId);
         }
-        public async Task<List<Channel>> GetChannelsByIds(List<long> ChannelIds)
+        public async Task<List<Channel>> GetChannelsByIds(List<long> channelIds)
         {
             return await _db.Channels
-                    .Where(c => ChannelIds.Contains(c.Id))
-                    .ToListAsync();
+                .Where(c => channelIds.Contains(c.Id))
+                .ToListAsync();
         }
         public async Task CreateNewChannel(Channel channel)
         {
@@ -98,12 +95,11 @@ namespace GolosaTgBotApi.Services.MariaService
         }
         public async Task<List<Post>> GetLatestsPosts(int limit, int offset)
         {
-            var posts = await _db.Posts
+            return await _db.Posts
                 .OrderByDescending(p => p.CreatedAt)
                 .Skip(offset)
                 .Take(limit)
                 .ToListAsync();
-            return posts;
         }
         public async Task UpdatePostInChatId(Post post)
         {

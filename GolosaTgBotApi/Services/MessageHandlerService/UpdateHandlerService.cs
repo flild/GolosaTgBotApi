@@ -22,17 +22,18 @@ namespace GolosaTgBotApi.Services.MessageHandlerService
             await foreach (var updateEvent in _channel.Reader.ReadAllAsync(stoppingToken))
             {
                 using var scope = _serviceProvider.CreateScope();
-
-                if(updateEvent.Type == updateTypes.ChannelPost)
                 {
-                    var postService = scope.ServiceProvider.GetRequiredService<IPostService>();
-                    await postService.HandlePost(updateEvent.ChannelPost);
-                }
-                //если id отрицательный, то это коммент в чате
-                if (updateEvent.Type == updateTypes.Message && updateEvent.Message.Chat.Id < 0)
-                {
-                    var commentService = scope.ServiceProvider.GetRequiredService<ICommentService>();
-                    await commentService.HandleComment(updateEvent.Message);
+                    if (updateEvent.Type == updateTypes.ChannelPost)
+                    {
+                        var postService = scope.ServiceProvider.GetRequiredService<IPostService>();
+                        await postService.HandlePost(updateEvent.ChannelPost);
+                    }
+                    //если id отрицательный, то это коммент в чате
+                    if (updateEvent.Type == updateTypes.Message && updateEvent.Message.Chat.Id < 0)
+                    {
+                        var commentService = scope.ServiceProvider.GetRequiredService<ICommentService>();
+                        await commentService.HandleComment(updateEvent.Message);
+                    }
                 }
             }
         }

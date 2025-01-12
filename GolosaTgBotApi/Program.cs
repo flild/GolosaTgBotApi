@@ -16,7 +16,6 @@ using GolosaTgBotApi.Services.MessageHandlerService;
 
 var builder = WebApplication.CreateBuilder(args);
 Env.Load();
-Console.WriteLine(Environment.GetEnvironmentVariable("DATABASE_CONNECTION_STRING"));
 builder.Services.AddDbContext<MariaContext>(options =>
 {
     options.UseMySql(

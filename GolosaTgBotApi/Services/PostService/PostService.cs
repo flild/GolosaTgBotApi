@@ -38,35 +38,37 @@ namespace GolosaTgBotApi.Services.PostService
         public async Task<List<PostDto>> GetPosts(int limit, int offset)
         {
             var posts = await _mariaService.GetLatestsPosts(limit, offset);
-            var Channels = await _mariaService.GetChannelsByIds(posts.Select(p => p.ChannelId).ToList());
-            var chatsOfThreadIds = new Dictionary<long, List<int>>();
-            foreach (var post in posts) 
-            {
-                var chatId = Channels.First(ch => ch.Id == post.ChannelId).LinkedChatId??0;
-                if (chatId == 0)
-                    continue;
-                if (!chatsOfThreadIds.ContainsKey(chatId))
-                {
-                    chatsOfThreadIds[chatId] = new List<int>();
-                }
-                chatsOfThreadIds[chatId].Add(post.InChatId);
-            }
-            var CommentsCountDict = await _mariaService.GetCommentCountByIds(chatsOfThreadIds);
-            var result = new List<PostDto>();
+            var channelIds = posts.Select(p => p.ChannelId).Distinct().ToList();
+            var channelsDict = (await _mariaService.GetChannelsByIds(channelIds))
+                .ToDictionary(ch => ch.Id);
+
+            // Уникальная структура для хранения (ChatId, ThreadId)
+            var chatsOfThreadIds = new Dictionary<long, HashSet<int>>();
             foreach (var post in posts)
             {
-                var channel = Channels.First(ch => ch.Id == post.ChannelId);
-                if (channel.LinkedChat == null)
+                if (!channelsDict.TryGetValue(post.ChannelId, out var channel) || channel.LinkedChatId == null)
                     continue;
-                var postDto = new PostDto
-                {
-                    Channel = channel,
-                    CommentCount = CommentsCountDict[post.InChatId],
-                    Post = post,
-                };
-                result.Add(postDto);
+
+                var chatId = channel.LinkedChatId.Value;
+                if (!chatsOfThreadIds.ContainsKey(chatId))
+                    chatsOfThreadIds[chatId] = new HashSet<int>();
+
+                chatsOfThreadIds[chatId].Add(post.InChatId);
             }
 
+            // Получаем словарь с подсчётом комментариев
+            var commentsCountDict = await _mariaService.GetCommentCountByIds(chatsOfThreadIds);
+
+            // Формирование итогового результата
+            var result = posts
+                .Where(post => channelsDict[post.ChannelId].LinkedChat != null)
+                .Select(post => new PostDto
+                {
+                    Channel = channelsDict[post.ChannelId],
+                    CommentCount = commentsCountDict.GetValueOrDefault((channelsDict[post.ChannelId].LinkedChatId ?? 0, post.InChatId), 0),
+                    Post = post
+                })
+                .ToList();
 
             return result;
         }
