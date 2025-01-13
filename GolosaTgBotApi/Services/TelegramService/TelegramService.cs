@@ -40,9 +40,14 @@ namespace GolosaTgBotApi.Services.TelegramService
            return await bot.GetChat(chatId);
 
         }
+        public async Task<ChatMember[]> GetChatAdministrators(long chatId)
+        {
+            return await bot.GetChatAdministrators(chatId);
+        }
         public async Task<bool> IsUserAdministrator(long chatId, long userId)
         {
             var chatMember = await bot.GetChatMember(chatId, userId);
+            
             if (chatMember.Status == ChatMemberStatus.Creator || chatMember.Status == ChatMemberStatus.Administrator)
             {
                 return true;

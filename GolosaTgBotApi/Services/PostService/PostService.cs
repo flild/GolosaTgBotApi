@@ -1,41 +1,20 @@
 ﻿using GolosaTgBotApi.Models;
 using GolosaTgBotApi.Models.Dtos;
-using GolosaTgBotApi.Services.ChannelService;
 using GolosaTgBotApi.Services.MariaService;
-using Telegram.Bot.Types;
 
 namespace GolosaTgBotApi.Services.PostService
 {
     public class PostService:IPostService
     {
         private readonly IMariaService _mariaService;
-        private readonly IChannelService _channelService;
 
-        public PostService(IMariaService mariaService, IChannelService channelService)
+
+        public PostService(IMariaService mariaService)
         {
             _mariaService = mariaService;
-            _channelService = channelService;
         }
-        public async Task HandlePost(Message post)
-        {
-            var newpost = new Post
-            {
-                postId = post.Id,
-                InChatId = 0,
-                Text = post.Text,
-                ChannelId = post.Chat.Id
-            };
-            await _channelService.CheckOnChannelExisting(post.Chat.Id);
-            try
-            {
-                await _mariaService.CreateNewPost(newpost);
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine(ex);
-            }
-        }
-        public async Task<List<PostDto>> GetPosts(int limit, int offset)
+
+        public async Task<List<PostPreviewDto>> GetPosts(int limit, int offset)
         {
             var posts = await _mariaService.GetLatestsPosts(limit, offset);
             var channelIds = posts.Select(p => p.ChannelId).Distinct().ToList();
@@ -61,10 +40,10 @@ namespace GolosaTgBotApi.Services.PostService
 
             // Формирование итогового результата
             var result = posts
-                .Where(post => channelsDict[post.ChannelId].LinkedChat != null)
-                .Select(post => new PostDto
+                .Where(post => channelsDict[post.ChannelId].LinkedChatId != null)
+                .Select(post => new PostPreviewDto
                 {
-                    Channel = channelsDict[post.ChannelId],
+                    ChannelName = channelsDict[post.ChannelId].Title,
                     CommentCount = commentsCountDict.GetValueOrDefault((channelsDict[post.ChannelId].LinkedChatId ?? 0, post.InChatId), 0),
                     Post = post
                 })
@@ -72,7 +51,10 @@ namespace GolosaTgBotApi.Services.PostService
 
             return result;
         }
-
+        public async Task<Post> GetPostById(long id)
+        {
+            return await _mariaService.GetPostById(id);
+        }
         public async Task LinkPostAndMessage(int? postId, int postIdInChat, long ChatId)
         {
             var post = await _mariaService.GetPostInChatById(postId, ChatId);

@@ -25,7 +25,7 @@ namespace GolosaTgBotApi.Services.MessageHandlerService
                 {
                     if (updateEvent.Type == updateTypes.ChannelPost)
                     {
-                        var postService = scope.ServiceProvider.GetRequiredService<IPostService>();
+                        var postService = scope.ServiceProvider.GetRequiredService<IPostHandleService>();
                         await postService.HandlePost(updateEvent.ChannelPost);
                     }
                     //если id отрицательный, то это коммент в чате

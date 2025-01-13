@@ -18,9 +18,12 @@ namespace GolosaTgBotApi.Services.ChannelService
         }
         public async Task CreateNewChannel(long chatId)
         {
+            
             var newChannel = new Channel();
+            var chatInfo = await _telegram.GetChatInfoById(chatId);   
             newChannel.Id = chatId;
             newChannel.OwnerId = await _telegram.GetChannelOwnerId(chatId);
+            newChannel.Title = chatInfo.Title;
             //todo переделать, пока что тут айди файла храниться
             await _mariaService.CreateNewChannel(newChannel);
         }

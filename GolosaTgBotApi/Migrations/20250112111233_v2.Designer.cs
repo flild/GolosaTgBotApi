@@ -4,6 +4,7 @@ using GolosaTgBotApi.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace GolosaTgBotApi.Migrations
 {
     [DbContext(typeof(MariaContext))]
-    partial class MariaContextModelSnapshot : ModelSnapshot
+    [Migration("20250112111233_v2")]
+    partial class v2
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -225,13 +228,11 @@ namespace GolosaTgBotApi.Migrations
 
             modelBuilder.Entity("GolosaTgBotApi.Models.Post", b =>
                 {
-                    b.HasOne("GolosaTgBotApi.Models.Channel", "Channel")
+                    b.HasOne("GolosaTgBotApi.Models.Channel", null)
                         .WithMany("Posts")
                         .HasForeignKey("ChannelId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-
-                    b.Navigation("Channel");
                 });
 
             modelBuilder.Entity("GolosaTgBotApi.Models.Channel", b =>

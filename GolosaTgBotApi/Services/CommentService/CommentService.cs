@@ -81,6 +81,13 @@ namespace GolosaTgBotApi.Services.CommentService
                 // Handle the exception as appropriate
             }
         }
+        public async Task<List<Comment>> GetCommentsByPostId(long PostId, int limit, int offset)
+        {
+            var post = await _mariaService.GetPostById(PostId);
+            var channel = await _mariaService.GetChannelById(post.ChannelId);
+            var comments = await _mariaService.GetCommentsByTreadId(post.InChatId, channel.LinkedChatId??0, limit, offset);
+            return comments;
+        }
         private async Task HandleGolosaStartCommand(Message message)
         {
             if (message.Chat.Id >= 0)
@@ -127,6 +134,7 @@ namespace GolosaTgBotApi.Services.CommentService
                 await _telegramService.SendMessageInChat(message.Chat.Id, "Ошибка");
             }
         }
+        
     }
 
 }

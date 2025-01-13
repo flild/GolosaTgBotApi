@@ -2,9 +2,6 @@
 using GolosaTgBotApi.Data;
 using GolosaTgBotApi.Models;
 using Microsoft.EntityFrameworkCore;
-using System.Linq;
-using System.Threading;
-using Telegram.Bot.Types;
 
 namespace GolosaTgBotApi.Services.MariaService
 {
@@ -41,19 +38,26 @@ namespace GolosaTgBotApi.Services.MariaService
         }
         public async Task<Dictionary<(long ChatId, int ThreadId), int>> GetCommentCountByIds(Dictionary<long, HashSet<int>> chatsOfThreadIds)
         {
-            // Собираем пары (ChatId, ThreadId)
-            var threadPairs = chatsOfThreadIds
-                .SelectMany(chat => chat.Value.Select(threadId => new { ChatId = chat.Key, ThreadId = threadId }))
+            // Step 1: Extract chat IDs and use the original dictionary for thread IDs
+            var chatIds = chatsOfThreadIds.Keys.ToList();
+            var chatIdToThreadIds = chatsOfThreadIds;
+
+            // Step 2: Retrieve all relevant comments from the database
+            var allComments = await _db.Comments
+                .Where(c => chatIds.Contains(c.ChatId) && c.MessageThreadId.HasValue)
+                .ToListAsync();
+
+            // Step 3: Filter comments in memory based on thread IDs
+            var filteredComments = allComments
+                .Where(c => chatIdToThreadIds.ContainsKey(c.ChatId) && chatIdToThreadIds[c.ChatId].Contains(c.MessageThreadId.Value))
                 .ToList();
 
-            // Запрос к БД с учётом ChatId и ThreadId
-            var commentCounts = await _db.Comments
-                .Where(c => c.MessageThreadId.HasValue &&
-                            threadPairs.Any(p => p.ChatId == c.Id && p.ThreadId == c.MessageThreadId.Value))
-                .GroupBy(c => new { ChatId = c.Id, ThreadId = c.MessageThreadId.Value })
-                .Select(g => new { g.Key.ChatId, g.Key.ThreadId, CommentCount = g.Count() })
-                .ToDictionaryAsync(x => (x.ChatId, x.ThreadId), x => x.CommentCount);
+            // Step 4: Group and count the filtered comments
+            var commentCounts = filteredComments
+                .GroupBy(c => (c.ChatId, c.MessageThreadId.Value))
+                .ToDictionary(g => g.Key, g => g.Count());
 
+            // Step 5: Return the result
             return commentCounts;
         }
         public async Task<Models.User?> GetUserbyIdAsync(long userId)

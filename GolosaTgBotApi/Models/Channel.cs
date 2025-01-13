@@ -7,6 +7,7 @@ namespace GolosaTgBotApi.Models
     {
         [Key]
         public long Id { get; set; }
+        public string Title {  get; set; }
         public long? OwnerId {  get; set; }
         public long? LinkedChatId { get; set; }
         public LinkedChat LinkedChat { get; set; }

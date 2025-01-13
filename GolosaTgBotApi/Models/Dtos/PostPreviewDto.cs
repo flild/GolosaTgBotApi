@@ -1,9 +1,9 @@
 ﻿namespace GolosaTgBotApi.Models.Dtos
 {
-    public class PostDto
+    public class PostPreviewDto
     {
         public Post Post { get; set; }
         public int CommentCount {  get; set; }
-        public Channel Channel { get; set; }
+        public string ChannelName {  get; set; }
     }
 }

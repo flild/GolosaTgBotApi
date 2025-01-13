@@ -1,8 +1,5 @@
-﻿using GolosaTgBotApi.Models;
-using GolosaTgBotApi.Models.Dtos;
-using GolosaTgBotApi.Services.MariaService;
+﻿using GolosaTgBotApi.Models.Dtos;
 using GolosaTgBotApi.Services.PostService;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace GolosaTgBotApi.Controllers
@@ -18,12 +15,27 @@ namespace GolosaTgBotApi.Controllers
             _postService = postService;
         }
 
-        // GET: api/post
-        [HttpGet]
-        public async Task<ActionResult<PostDto>> GetPost()
+        // POST: api/post
+        [HttpPost]
+        public async Task<ActionResult<PostPreviewDto>> GetPost([FromBody] PostParams parameters)
         {
-            var posts = _postService.GetPosts(5,0);
+            var posts = await _postService.GetPosts(parameters.Limit, parameters.Offset);
             return Ok(posts);
         }
+        [HttpGet("{id}")]
+        public async Task<ActionResult<PostPreviewDto>> GetPost(int id)
+        {
+            var post = await _postService.GetPostById(id);
+            if (post == null)
+            {
+                return NotFound();
+            }
+            return Ok(post);
+        }
+    }
+    public class PostParams
+    {
+        public int Limit { get; set; }
+        public int Offset { get; set; }
     }
 }

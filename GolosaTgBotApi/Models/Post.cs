@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace GolosaTgBotApi.Models
 {
@@ -12,6 +13,8 @@ namespace GolosaTgBotApi.Models
         public bool IsDelete { get; set; } = false;
         public long ChannelId { get; set; }
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow; // Дата публикации
+        [NotMapped]
+        public Channel Channel { get; set; }
 
     }
 }
