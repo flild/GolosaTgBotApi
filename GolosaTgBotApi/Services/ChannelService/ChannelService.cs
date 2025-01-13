@@ -16,24 +16,36 @@ namespace GolosaTgBotApi.Services.ChannelService
             _telegram = telegramService;
             _mariaService = mariaService;
         }
-        public async Task CreateNewChannel(long chatId)
+        public async Task CreateNewChannel(long channelId)
         {
-            
+            var channel = await _mariaService.GetChannelById(channelId);
+            if (channel != null)
+            {
+                await UpdateChannelInfo(channel);
+                return;
+            }
             var newChannel = new Channel();
-            var chatInfo = await _telegram.GetChatInfoById(chatId);   
-            newChannel.Id = chatId;
-            newChannel.OwnerId = await _telegram.GetChannelOwnerId(chatId);
+            var chatInfo = await _telegram.GetChatInfoById(channelId);   
+            newChannel.Id = channelId;
+            newChannel.OwnerId = await _telegram.GetChannelOwnerId(channelId);
             newChannel.Title = chatInfo.Title;
-            //todo переделать, пока что тут айди файла храниться
+            
             await _mariaService.CreateNewChannel(newChannel);
         }
-        public async Task CheckOnChannelExisting(long id)
+        public async Task CheckOnChannelExisting(long channelId)
         {
-            var channel = await _mariaService.GetChannelById(id);
+            var channel = await _mariaService.GetChannelById(channelId);
             if (channel == null)
             {
-                await CreateNewChannel(id);
+                await CreateNewChannel(channelId);
             }
+        }
+        public async Task UpdateChannelInfo(Channel channel)
+        {
+            var chatInfo = await _telegram.GetChatInfoById(channel.Id);
+            channel.OwnerId = await _telegram.GetChannelOwnerId(channel.Id);
+            channel.Title = chatInfo.Title;
+            await _mariaService.UpdateChannelInfo(channel);
         }
     }
 }

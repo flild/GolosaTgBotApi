@@ -37,7 +37,6 @@ namespace GolosaTgBotApi.Migrations
                         .HasColumnType("bigint");
 
                     b.Property<string>("Title")
-                        .IsRequired()
                         .HasColumnType("longtext");
 
                     b.Property<long?>("UserId")
@@ -93,6 +92,8 @@ namespace GolosaTgBotApi.Migrations
                     b.HasIndex("ChatId");
 
                     b.HasIndex("Id");
+
+                    b.HasIndex("MessageThreadId");
 
                     b.HasIndex("UserId");
 
@@ -225,13 +226,11 @@ namespace GolosaTgBotApi.Migrations
 
             modelBuilder.Entity("GolosaTgBotApi.Models.Post", b =>
                 {
-                    b.HasOne("GolosaTgBotApi.Models.Channel", "Channel")
+                    b.HasOne("GolosaTgBotApi.Models.Channel", null)
                         .WithMany("Posts")
                         .HasForeignKey("ChannelId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-
-                    b.Navigation("Channel");
                 });
 
             modelBuilder.Entity("GolosaTgBotApi.Models.Channel", b =>

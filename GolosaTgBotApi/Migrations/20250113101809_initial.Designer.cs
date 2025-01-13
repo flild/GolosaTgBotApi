@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace GolosaTgBotApi.Migrations
 {
     [DbContext(typeof(MariaContext))]
-    [Migration("20250108143914_v1")]
-    partial class v1
+    [Migration("20250113101809_initial")]
+    partial class initial
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -38,6 +38,9 @@ namespace GolosaTgBotApi.Migrations
 
                     b.Property<long?>("OwnerId")
                         .HasColumnType("bigint");
+
+                    b.Property<string>("Title")
+                        .HasColumnType("longtext");
 
                     b.Property<long?>("UserId")
                         .HasColumnType("bigint");
@@ -92,6 +95,8 @@ namespace GolosaTgBotApi.Migrations
                     b.HasIndex("ChatId");
 
                     b.HasIndex("Id");
+
+                    b.HasIndex("MessageThreadId");
 
                     b.HasIndex("UserId");
 

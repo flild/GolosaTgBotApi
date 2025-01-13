@@ -2,6 +2,7 @@
 using GolosaTgBotApi.Data;
 using GolosaTgBotApi.Models;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Hosting;
 
 namespace GolosaTgBotApi.Services.MariaService
 {
@@ -82,6 +83,11 @@ namespace GolosaTgBotApi.Services.MariaService
         public async Task CreateNewChannel(Channel channel)
         {
             _db.Channels.Add(channel);
+            await _db.SaveChangesAsync();
+        }
+        public async Task UpdateChannelInfo(Channel channel)
+        {
+            _db.Channels.Update(channel);
             await _db.SaveChangesAsync();
         }
         public async Task<Post> GetPostInChatById(int? PostId, long ChatId)

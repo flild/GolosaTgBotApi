@@ -95,7 +95,9 @@ namespace GolosaTgBotApi.Services.CommentService
                 // Not a channel chat
                 return;
             }
-/*            var isAdmin = await _telegramService.IsUserAdministrator(message.Chat.Id, message.From.Id);
+/*       пока что это работает криво
+        телеграм не всегда верно присылает данные об owner
+ *       var isAdmin = await _telegramService.IsUserAdministrator(message.Chat.Id, message.From.Id);
             if (!isAdmin)
             {
                 _telegramService.SendMessageInChat(message.Chat.Id, "Сообщение должен отправить администратор");
@@ -104,28 +106,13 @@ namespace GolosaTgBotApi.Services.CommentService
             var chatInfo = await _telegramService.GetChatInfoById(message.Chat.Id);
             if(chatInfo.LinkedChatId == null)
             {
-                _telegramService.SendMessageInChat(message.Chat.Id, "пока что бота работает только в чатах каналов");
+                _telegramService.SendMessageInChat(message.Chat.Id, "пока что бот работает только в чатах каналов");
                 return;
             }
-            var channel = new Models.Channel
-            {
-                Id = (long)chatInfo.LinkedChatId,
-                OwnerId = await _telegramService.GetChannelOwnerId(chatInfo.LinkedChatId),
-                LinkedChatId = message.Chat.Id
-            };
-
-            var linkedChat = new LinkedChat
-            {
-                Id = message.Chat.Id, 
-                Name = message.Chat.Title,
-                ChannelID = chatInfo.LinkedChatId
-            };
-
-            channel.LinkedChat = linkedChat;
 
             try
             {
-                await _mariaService.CreateNewChannel(channel);
+                await _channelService.CreateNewChannel(chatInfo.LinkedChatId??0);
                 await _telegramService.SendMessageInChat(message.Chat.Id, "Чат зарегистрирован успешно");
             }
             catch (Exception ex)

@@ -38,6 +38,8 @@ namespace GolosaTgBotApi.Migrations
                 {
                     Id = table.Column<long>(type: "bigint", nullable: false)
                         .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
+                    Title = table.Column<string>(type: "longtext", nullable: true)
+                        .Annotation("MySql:CharSet", "utf8mb4"),
                     OwnerId = table.Column<long>(type: "bigint", nullable: true),
                     LinkedChatId = table.Column<long>(type: "bigint", nullable: true),
                     UserId = table.Column<long>(type: "bigint", nullable: true)
@@ -116,18 +118,12 @@ namespace GolosaTgBotApi.Migrations
                     IsDelete = table.Column<bool>(type: "tinyint(1)", nullable: false),
                     Text = table.Column<string>(type: "longtext", nullable: false)
                         .Annotation("MySql:CharSet", "utf8mb4"),
-                    CreatedAt = table.Column<DateTime>(type: "datetime(6)", nullable: false),
-                    ChannelId = table.Column<long>(type: "bigint", nullable: true)
+                    CreatedAt = table.Column<DateTime>(type: "datetime(6)", nullable: false)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Comments", x => x.Id);
                     table.UniqueConstraint("AK_Comments_TelegramId_ChatId", x => new { x.TelegramId, x.ChatId });
-                    table.ForeignKey(
-                        name: "FK_Comments_Channels_ChannelId",
-                        column: x => x.ChannelId,
-                        principalTable: "Channels",
-                        principalColumn: "Id");
                     table.ForeignKey(
                         name: "FK_Comments_Comments_ParentId_ChatId",
                         columns: x => new { x.ParentId, x.ChatId },
@@ -160,11 +156,6 @@ namespace GolosaTgBotApi.Migrations
                 column: "UserId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Comments_ChannelId",
-                table: "Comments",
-                column: "ChannelId");
-
-            migrationBuilder.CreateIndex(
                 name: "IX_Comments_ChatId",
                 table: "Comments",
                 column: "ChatId");
@@ -173,6 +164,11 @@ namespace GolosaTgBotApi.Migrations
                 name: "IX_Comments_Id",
                 table: "Comments",
                 column: "Id");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Comments_MessageThreadId",
+                table: "Comments",
+                column: "MessageThreadId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Comments_ParentId_ChatId",

@@ -46,6 +46,10 @@ namespace GolosaTgBotApi.Data
 
             modelBuilder.Entity<Comment>()
                 .HasIndex(c => c.Id);
+            modelBuilder.Entity<Comment>()
+                .HasIndex(c => c.MessageThreadId);
+            modelBuilder.Entity<Comment>()
+                .HasIndex(c => c.ChatId);
             modelBuilder.Entity<Post>()
                .HasIndex(c => c.Id);
             modelBuilder.Entity<User>()

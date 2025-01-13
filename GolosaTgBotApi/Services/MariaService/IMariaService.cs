@@ -14,6 +14,7 @@ namespace GolosaTgBotApi.Services.MariaService
         public Task<Channel?> GetChannelById(long ChannelId);
         public Task<List<Channel>> GetChannelsByIds(List<long> ChannelIds);
         public Task CreateNewChannel(Channel channel);
+        public Task UpdateChannelInfo(Channel channel);
         public Task<Post> GetPostInChatById(int? PostId, long ChatId);
         public Task CreateNewPost(Post post);
         public Task<Post> GetPostById(long id);

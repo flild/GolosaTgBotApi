@@ -4,15 +4,41 @@ using GolosaTgBotApi.Services.MariaService;
 using GolosaTgBotApi.Services.TelegramService;
 using GolosaTgBotApi.Services.UserService;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using Telegram.Bot.Types;
 using DotNetEnv;
 using GolosaTgBotApi.Services.ChannelService;
 using EntityChannel = System.Threading.Channels.Channel;
 using GolosaTgBotApi.Services.PostService;
+using Serilog;
+using Serilog.Debugging;
 using GolosaTgBotApi.Services.MessageHandlerService;
+using System.Reflection;
 
 var builder = WebApplication.CreateBuilder(args);
+string assemblyLocation = Assembly.GetExecutingAssembly().Location;
+string directoryPath = Path.GetDirectoryName(assemblyLocation);
+Environment.CurrentDirectory = directoryPath;
+//Нужно при сборке
+/*builder.Configuration.SetBasePath(directoryPath)
+  .AddJsonFile("appsettings.Release.json", optional: true, reloadOnChange: true);*/
+
 Env.Load();
+// логи
+builder.Host.UseSerilog((context, services, configuration) =>
+{
+    configuration
+    .ReadFrom.Configuration(context.Configuration)
+    .Enrich.FromLogContext()
+    .WriteTo.File
+        (
+            path: "./logs/log-.txt",
+            outputTemplate: "{Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz} [{Level}] {Message}{NewLine}{Exception}",
+            fileSizeLimitBytes: 100000,
+            rollOnFileSizeLimit: true
+
+        );
+});
 builder.Services.AddDbContext<MariaContext>(options =>
 {
     options.UseMySql(
