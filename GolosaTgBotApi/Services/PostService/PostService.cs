@@ -4,10 +4,9 @@ using GolosaTgBotApi.Services.MariaService;
 
 namespace GolosaTgBotApi.Services.PostService
 {
-    public class PostService:IPostService
+    public class PostService : IPostService
     {
         private readonly IMariaService _mariaService;
-
 
         public PostService(IMariaService mariaService)
         {
@@ -51,10 +50,12 @@ namespace GolosaTgBotApi.Services.PostService
 
             return result;
         }
+
         public async Task<Post> GetPostById(long id)
         {
             return await _mariaService.GetPostById(id);
         }
+
         public async Task LinkPostAndMessage(int? postId, int postIdInChat, long ChatId)
         {
             var post = await _mariaService.GetPostInChatById(postId, ChatId);
@@ -62,5 +63,4 @@ namespace GolosaTgBotApi.Services.PostService
             await _mariaService.UpdatePostInChatId(post);
         }
     }
-
 }

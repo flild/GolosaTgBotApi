@@ -16,6 +16,7 @@ namespace GolosaTgBotApi.Services.MessageHandlerService
             _channel = channel;
             _serviceProvider = serviceProvider;
         }
+
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
             // Чтение сообщений из канала в бесконечном цикле
@@ -37,6 +38,5 @@ namespace GolosaTgBotApi.Services.MessageHandlerService
                 }
             }
         }
-
     }
 }

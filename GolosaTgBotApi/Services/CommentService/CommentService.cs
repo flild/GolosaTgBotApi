@@ -1,13 +1,10 @@
-﻿
-using GolosaTgBotApi.Models;
+﻿using GolosaTgBotApi.Models;
 using GolosaTgBotApi.Services.ChannelService;
 using GolosaTgBotApi.Services.MariaService;
 using GolosaTgBotApi.Services.PostService;
 using GolosaTgBotApi.Services.TelegramService;
 using GolosaTgBotApi.Services.UserService;
-using System.Threading.Channels;
 using Telegram.Bot.Types;
-using Telegram.Bot.Types.Enums;
 
 namespace GolosaTgBotApi.Services.CommentService
 {
@@ -36,6 +33,7 @@ namespace GolosaTgBotApi.Services.CommentService
             _postService = PostService;
             _logger = logger;
         }
+
         public async Task HandleComment(Message message)
         {
             if (message.Text.ToLower() == "/golosastart")
@@ -56,7 +54,6 @@ namespace GolosaTgBotApi.Services.CommentService
                 UserId = message.From.Id,
                 Text = message.Text,
                 CreatedAt = DateTime.UtcNow
-
             };
             if (message.From.Id == systemId)
             {
@@ -81,13 +78,15 @@ namespace GolosaTgBotApi.Services.CommentService
                 // Handle the exception as appropriate
             }
         }
+
         public async Task<List<Comment>> GetCommentsByPostId(long PostId, int limit, int offset)
         {
             var post = await _mariaService.GetPostById(PostId);
             var channel = await _mariaService.GetChannelById(post.ChannelId);
-            var comments = await _mariaService.GetCommentsByTreadId(post.InChatId, channel.LinkedChatId??0, limit, offset);
+            var comments = await _mariaService.GetCommentsByTreadId(post.InChatId, channel.LinkedChatId ?? 0, limit, offset);
             return comments;
         }
+
         private async Task HandleGolosaStartCommand(Message message)
         {
             if (message.Chat.Id >= 0)
@@ -95,16 +94,16 @@ namespace GolosaTgBotApi.Services.CommentService
                 // Not a channel chat
                 return;
             }
-/*       пока что это работает криво
-        телеграм не всегда верно присылает данные об owner
- *       var isAdmin = await _telegramService.IsUserAdministrator(message.Chat.Id, message.From.Id);
-            if (!isAdmin)
-            {
-                _telegramService.SendMessageInChat(message.Chat.Id, "Сообщение должен отправить администратор");
-                return;
-            }*/
+            /*       пока что это работает криво
+                    телеграм не всегда верно присылает данные об owner
+             *       var isAdmin = await _telegramService.IsUserAdministrator(message.Chat.Id, message.From.Id);
+                        if (!isAdmin)
+                        {
+                            _telegramService.SendMessageInChat(message.Chat.Id, "Сообщение должен отправить администратор");
+                            return;
+                        }*/
             var chatInfo = await _telegramService.GetChatInfoById(message.Chat.Id);
-            if(chatInfo.LinkedChatId == null)
+            if (chatInfo.LinkedChatId == null)
             {
                 _telegramService.SendMessageInChat(message.Chat.Id, "пока что бот работает только в чатах каналов");
                 return;
@@ -112,7 +111,7 @@ namespace GolosaTgBotApi.Services.CommentService
 
             try
             {
-                await _channelService.CreateNewChannel(chatInfo.LinkedChatId??0);
+                await _channelService.CreateNewChannel(chatInfo.LinkedChatId ?? 0);
                 await _telegramService.SendMessageInChat(message.Chat.Id, "Чат зарегистрирован успешно");
             }
             catch (Exception ex)
@@ -121,7 +120,5 @@ namespace GolosaTgBotApi.Services.CommentService
                 await _telegramService.SendMessageInChat(message.Chat.Id, "Ошибка");
             }
         }
-        
     }
-
 }

@@ -5,7 +5,7 @@ using Telegram.Bot.Types;
 
 namespace GolosaTgBotApi.Services.PostService
 {
-    public class PostHandleService: IPostHandleService
+    public class PostHandleService : IPostHandleService
     {
         private readonly IChannelService _channelService;
         private readonly IMariaService _mariaService;
@@ -15,6 +15,7 @@ namespace GolosaTgBotApi.Services.PostService
             _channelService = channelService;
             _mariaService = mariaService;
         }
+
         public async Task HandlePost(Message post)
         {
             var newpost = new Post
