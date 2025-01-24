@@ -63,5 +63,15 @@ namespace GolosaTgBotApi.Services.TelegramService
                 return false;
             }
         }
+
+        public async Task TestAsync()
+        {
+            var userProfile = await bot.GetUserProfilePhotos(306903557);
+            var fileId = userProfile.Photos[0][0].FileId;
+            var fileInfo = await bot.GetFile("AgACAgIAAx0CTxROOQADt2eTidRaJ48VTDYN75IPZFnQQyq6AAJA6jEbTASZSLmhzaKlET7vAQADAgADbQADNgQ");
+            var url = fileInfo.FilePath;
+            Console.WriteLine(fileId);
+            Console.WriteLine(url);
+        }
     }
 }

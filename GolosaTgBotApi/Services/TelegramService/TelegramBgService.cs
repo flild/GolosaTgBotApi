@@ -6,10 +6,9 @@ using System.Threading.Channels;
 using DotNetEnv;
 using GolosaTgBotApi.Models;
 
-
 namespace GolosaTgBotApi.Services.TelegramService
 {
-    public class TelegramBgService: BackgroundService
+    public class TelegramBgService : BackgroundService
     {
         private readonly ITelegramBotClient bot;
         private readonly Channel<Update> _updateChannel;
@@ -24,6 +23,7 @@ namespace GolosaTgBotApi.Services.TelegramService
         public async Task HandleUpdateAsync(ITelegramBotClient botClient, Update update, CancellationToken cancellationToken)
         {
             //Console.WriteLine(JsonConvert.SerializeObject(update));
+
             await _updateChannel.Writer.WriteAsync(update);
         }
 
@@ -49,6 +49,5 @@ namespace GolosaTgBotApi.Services.TelegramService
                 cancellationToken
             );
         }
-
     }
 }

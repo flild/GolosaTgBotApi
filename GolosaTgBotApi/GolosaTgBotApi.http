@@ -21,3 +21,6 @@ GET {{GolosaTgBotApi_HostAddress}}/api/post/3
 Content-Type: application/json
 Accept: application/json
 ###
+GET {{GolosaTgBotApi_HostAddress}}/api/test
+Accept: application/json
+###
