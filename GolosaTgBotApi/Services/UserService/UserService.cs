@@ -21,7 +21,7 @@ namespace GolosaTgBotApi.Services.UserService
             newUser.Username = user.Username;
             var avatarId = await _telegram.GetAvatarIdByUserId(user.Id);
             //todo переделать, пока что тут айди файла храниться
-            newUser.AvatarUrl = avatarId;
+            newUser.AvatarFileId = avatarId;
             await _mariaService.CreateNewUser(newUser);
         }
     }

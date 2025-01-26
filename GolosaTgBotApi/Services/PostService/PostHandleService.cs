@@ -18,13 +18,12 @@ namespace GolosaTgBotApi.Services.PostService
 
         public async Task HandlePost(Message post)
         {
-            var newpost = new Post
-            {
-                postId = post.Id,
-                InChatId = 0,
-                Text = post.Text,
-                ChannelId = post.Chat.Id
-            };
+            var newpost = new Post();
+            newpost.postId = post.Id;
+            newpost.InChatId = 0;
+            newpost.Text = post.Text;
+            newpost.ChannelId = post.Chat.Id;
+            //newpost.PhotosFileId = post.Photo[0].FileId;
             await _channelService.CheckOnChannelExisting(post.Chat.Id);
             try
             {
