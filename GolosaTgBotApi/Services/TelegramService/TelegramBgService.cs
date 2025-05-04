@@ -16,15 +16,16 @@ namespace GolosaTgBotApi.Services.TelegramService
         public TelegramBgService(Channel<Update> updateChannel)
         {
             Env.Load();
+            Console.WriteLine(Environment.GetEnvironmentVariable("TELEGRAM_BOT_API_KEY"));
             bot = new TelegramBotClient(Environment.GetEnvironmentVariable("TELEGRAM_BOT_API_KEY"));
             _updateChannel = updateChannel;
         }
 
         public async Task HandleUpdateAsync(ITelegramBotClient botClient, Update update, CancellationToken cancellationToken)
         {
-            //Console.WriteLine(JsonConvert.SerializeObject(update));
+            Console.WriteLine(JsonConvert.SerializeObject(update));
 
-            await _updateChannel.Writer.WriteAsync(update);
+            //await _updateChannel.Writer.WriteAsync(update);
         }
 
         public async Task HandleErrorAsync(ITelegramBotClient botClient, Exception exception, CancellationToken cancellationToken)

@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace GolosaTgBotApi.Migrations
 {
     [DbContext(typeof(MariaContext))]
-    [Migration("20250126183136_v1")]
-    partial class v1
+    [Migration("20250504125740_initial")]
+    partial class initial
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -141,15 +141,17 @@ namespace GolosaTgBotApi.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime(6)");
 
+                    b.Property<string>("ImagesFileId")
+                        .HasColumnType("longtext");
+
                     b.Property<int>("InChatId")
                         .HasColumnType("int");
 
                     b.Property<bool>("IsDelete")
                         .HasColumnType("tinyint(1)");
 
-                    b.Property<string>("PhotosFileId")
-                        .IsRequired()
-                        .HasColumnType("longtext");
+                    b.Property<long?>("MediaGroup")
+                        .HasColumnType("bigint");
 
                     b.Property<string>("Text")
                         .HasColumnType("longtext");

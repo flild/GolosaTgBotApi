@@ -18,20 +18,64 @@ namespace GolosaTgBotApi.Services.PostService
 
         public async Task HandlePost(Message post)
         {
-            var newpost = new Post();
-            newpost.postId = post.Id;
-            newpost.InChatId = 0;
-            newpost.Text = post.Text;
-            newpost.ChannelId = post.Chat.Id;
-            //newpost.PhotosFileId = post.Photo[0].FileId;
+            // Ensure channel is registered
             await _channelService.CheckOnChannelExisting(post.Chat.Id);
-            try
+
+            // If this is part of a media group
+            if (!string.IsNullOrEmpty(post.MediaGroupId))
             {
-                await _mariaService.CreateNewPost(newpost);
+                long mgid = long.Parse(post.MediaGroupId!);
+                // Try to get existing post by media group
+                var existingPost = await _mariaService.GetPostByMediaGroupAsync(mgid, post.Chat.Id);
+                string fileId = post.Photo?.Last().FileId;
+
+                if (existingPost != null)
+                {
+                    // Append new image fileId
+                    existingPost.ImagesFileId ??= new List<string>();
+                    existingPost.ImagesFileId.Add(fileId);
+                    await _mariaService.UpdatePostAsync(existingPost);
+                }
+                else
+                {
+                    // First image in group: create new post record
+                    var newPost = new Post
+                    {
+                        postId = post.MessageId,
+                        InChatId = 0,
+                        ChannelId = post.Chat.Id,
+                        MediaGroup = mgid,
+                        ImagesFileId = new List<string> { fileId },
+                        Text = post.Caption ?? post.Text
+                    };
+                    await _mariaService.CreateNewPostAsync(newPost);
+                }
             }
-            catch (Exception ex)
+            else if (post.Photo != null && post.Photo.Any())
             {
-                Console.WriteLine(ex);
+                // Single photo
+                string fileId = post.Photo.Last().FileId;
+                var newPost = new Post
+                {
+                    postId = post.MessageId,
+                    InChatId = 0,
+                    ChannelId = post.Chat.Id,
+                    ImagesFileId = new List<string> { fileId },
+                    Text = post.Caption ?? post.Text
+                };
+                await _mariaService.CreateNewPostAsync(newPost);
+            }
+            else
+            {
+                // Pure text post
+                var newPost = new Post
+                {
+                    postId = post.MessageId,
+                    InChatId = 0,
+                    ChannelId = post.Chat.Id,
+                    Text = post.Text
+                };
+                await _mariaService.CreateNewPostAsync(newPost);
             }
         }
     }

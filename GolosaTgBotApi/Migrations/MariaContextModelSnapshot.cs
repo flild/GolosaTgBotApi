@@ -138,15 +138,17 @@ namespace GolosaTgBotApi.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime(6)");
 
+                    b.Property<string>("ImagesFileId")
+                        .HasColumnType("longtext");
+
                     b.Property<int>("InChatId")
                         .HasColumnType("int");
 
                     b.Property<bool>("IsDelete")
                         .HasColumnType("tinyint(1)");
 
-                    b.Property<string>("PhotosFileId")
-                        .IsRequired()
-                        .HasColumnType("longtext");
+                    b.Property<long?>("MediaGroup")
+                        .HasColumnType("bigint");
 
                     b.Property<string>("Text")
                         .HasColumnType("longtext");

@@ -18,7 +18,7 @@ using System.Reflection;
 var builder = WebApplication.CreateBuilder(args);
 string assemblyLocation = Assembly.GetExecutingAssembly().Location;
 string directoryPath = Path.GetDirectoryName(assemblyLocation);
-Environment.CurrentDirectory = directoryPath;
+//Environment.CurrentDirectory = directoryPath;
 //Нужно при сборке
 /*builder.Configuration.SetBasePath(directoryPath)
   .AddJsonFile("appsettings.Release.json", optional: true, reloadOnChange: true);*/
@@ -49,7 +49,7 @@ builder.Services.AddDbContext<MariaContext>(options =>
 builder.Services.AddSingleton(EntityChannel.CreateUnbounded<Update>());
 builder.Services.AddHostedService<TelegramBgService>();
 builder.Services.AddHostedService<UpdateHandlerService>();
-builder.Services.AddScoped<ICommentService,CommentService>();
+builder.Services.AddScoped<ICommentService, CommentService>();
 builder.Services.AddScoped<IMariaService, MariaService>();
 builder.Services.AddScoped<IPostHandleService, PostHandleService>();
 builder.Services.AddScoped<IUserService, UserService>();
@@ -57,7 +57,6 @@ builder.Services.AddScoped<IChannelService, ChannelService>();
 builder.Services.AddScoped<ITelegramService, TelegramService>();
 builder.Services.AddScoped<IPostService, PostService>();
 builder.Services.AddControllers();
-
 
 var app = builder.Build();
 
@@ -74,5 +73,3 @@ app.UseAuthorization();
 app.MapControllers();
 
 app.Run();
-
-
