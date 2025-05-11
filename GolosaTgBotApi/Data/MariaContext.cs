@@ -3,13 +3,15 @@ using Microsoft.EntityFrameworkCore;
 
 namespace GolosaTgBotApi.Data
 {
-    public class MariaContext:DbContext
+    public class MariaContext : DbContext
     {
         public DbSet<User> Users { get; set; }
         public DbSet<Post> Posts { get; set; }
         public DbSet<Comment> Comments { get; set; }
         public DbSet<Channel> Channels { get; set; }
-        public MariaContext(DbContextOptions<MariaContext> options): base(options)
+        public DbSet<LinkedChat> LinkedChats { get; set; }
+
+        public MariaContext(DbContextOptions<MariaContext> options) : base(options)
         {
         }
 
@@ -42,7 +44,6 @@ namespace GolosaTgBotApi.Data
                 .WithOne(lc => lc.Channel)
                 .HasForeignKey<LinkedChat>(lc => lc.ChannelID)
                 .OnDelete(DeleteBehavior.Cascade);
-
 
             modelBuilder.Entity<Comment>()
                 .HasIndex(c => c.Id);

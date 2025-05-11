@@ -96,7 +96,12 @@ namespace GolosaTgBotApi.Services.MariaService
 
         public async Task UpdateChannelInfo(Channel channel)
         {
+            if (channel.LinkedChat != null)
+            {
+                _db.LinkedChats.Add(channel.LinkedChat);
+            }
             _db.Channels.Update(channel);
+
             await _db.SaveChangesAsync();
         }
 

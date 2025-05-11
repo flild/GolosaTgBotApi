@@ -16,21 +16,37 @@ namespace GolosaTgBotApi.Services.ChannelService
             _mariaService = mariaService;
         }
 
-        public async Task CreateNewChannel(long channelId)
+        public async Task<Channel> CreateNewChannel(long channelId)
         {
             var channel = await _mariaService.GetChannelById(channelId);
             if (channel != null)
             {
                 await UpdateChannelInfo(channel);
-                return;
+                return channel;
             }
             var newChannel = new Channel();
             var chatInfo = await _telegram.GetChatInfoById(channelId);
             newChannel.Id = channelId;
             newChannel.OwnerId = await _telegram.GetChannelOwnerId(channelId);
             newChannel.Title = chatInfo.Title;
-
             await _mariaService.CreateNewChannel(newChannel);
+            return newChannel;
+        }
+
+        public async Task AddLinkedChat(ChatFullInfo chatInfo)
+        {
+            var channel = await _mariaService.GetChannelById(chatInfo.LinkedChatId ?? 0);
+            if (channel == null)
+            {
+                channel = await CreateNewChannel(chatInfo.LinkedChatId ?? 0);
+            }
+            LinkedChat chat = new LinkedChat();
+            chat.Name = chatInfo.Title;
+            chat.ChannelID = channel.Id;
+            chat.Id = chatInfo.Id;
+            channel.LinkedChat = chat;
+            channel.LinkedChatId = chatInfo.Id;
+            _mariaService.UpdateChannelInfo(channel);
         }
 
         public async Task CheckOnChannelExisting(long channelId)

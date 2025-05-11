@@ -25,7 +25,7 @@ namespace GolosaTgBotApi.Services.TelegramService
         {
             Console.WriteLine(JsonConvert.SerializeObject(update));
 
-            //await _updateChannel.Writer.WriteAsync(update);
+            await _updateChannel.Writer.WriteAsync(update);
         }
 
         public async Task HandleErrorAsync(ITelegramBotClient botClient, Exception exception, CancellationToken cancellationToken)

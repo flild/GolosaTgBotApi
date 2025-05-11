@@ -36,7 +36,7 @@ namespace GolosaTgBotApi.Services.CommentService
 
         public async Task HandleComment(Message message)
         {
-            if (message.Text.ToLower() == "/golosastart")
+            if (message.Text?.ToLower() == "/golosastart")
             {
                 await HandleGolosaStartCommand(message);
                 return;
@@ -111,7 +111,7 @@ namespace GolosaTgBotApi.Services.CommentService
 
             try
             {
-                await _channelService.CreateNewChannel(chatInfo.LinkedChatId ?? 0);
+                await _channelService.AddLinkedChat(chatInfo);
                 await _telegramService.SendMessageInChat(message.Chat.Id, "Чат зарегистрирован успешно");
             }
             catch (Exception ex)

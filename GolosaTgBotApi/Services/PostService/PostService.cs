@@ -7,10 +7,12 @@ namespace GolosaTgBotApi.Services.PostService
     public class PostService : IPostService
     {
         private readonly IMariaService _mariaService;
+        private readonly ILogger<PostService> _logger;
 
-        public PostService(IMariaService mariaService)
+        public PostService(IMariaService mariaService, ILogger<PostService> logger)
         {
             _mariaService = mariaService;
+            _logger = logger;
         }
 
         public async Task<List<PostPreviewDto>> GetPosts(int limit, int offset)
@@ -58,7 +60,19 @@ namespace GolosaTgBotApi.Services.PostService
 
         public async Task LinkPostAndMessage(int? postId, int postIdInChat, long ChatId)
         {
+            if (postId == null)
+            {
+                // Не указан ID поста
+                _logger.LogWarning("LinkPostAndMessage: postId is null for ChatId {ChatId}", ChatId);
+                return;
+            }
             var post = await _mariaService.GetPostInChatById(postId, ChatId);
+            if (post == null)
+            {
+                _logger.LogWarning("LinkPostAndMessage: Post not found for postId {PostId} in ChatId {ChatId}", postId, ChatId);
+                return;
+            }
+
             post.InChatId = postIdInChat;
             await _mariaService.UpdatePostInChatId(post);
         }

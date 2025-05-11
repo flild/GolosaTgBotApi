@@ -1,8 +1,14 @@
-﻿namespace GolosaTgBotApi.Services.ChannelService
+﻿using GolosaTgBotApi.Models;
+using Telegram.Bot.Types;
+
+namespace GolosaTgBotApi.Services.ChannelService
 {
     public interface IChannelService
     {
-        public Task CreateNewChannel(long chatId);
-        public Task CheckOnChannelExisting(long id);
+        Task<Channel> CreateNewChannel(long chatId);
+
+        Task CheckOnChannelExisting(long id);
+
+        Task AddLinkedChat(ChatFullInfo chatInfo);
     }
 }
