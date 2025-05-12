@@ -22,6 +22,7 @@ namespace GolosaTgBotApi.Data
                 .HasOne(c => c.Parent) // Указываем навигационное свойство для родителя
                 .WithMany(c => c.Replies) // Указываем навигационное свойство для дочерних комментариев
                 .HasForeignKey(c => new { c.ParentId, c.ChatId }) // Составной внешний ключ (ParentId + ChannelId)
+                .IsRequired(false)
                 .HasPrincipalKey(c => new { c.TelegramId, c.ChatId }) // Составной ключ для связи (TelegramId + ChannelId)
                 .OnDelete(DeleteBehavior.Restrict);
 
@@ -44,6 +45,8 @@ namespace GolosaTgBotApi.Data
                 .WithOne(lc => lc.Channel)
                 .HasForeignKey<LinkedChat>(lc => lc.ChannelID)
                 .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<LinkedChat>().ToTable("linkedchat");
 
             modelBuilder.Entity<Comment>()
                 .HasIndex(c => c.Id);

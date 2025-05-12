@@ -25,19 +25,11 @@ string directoryPath = Path.GetDirectoryName(assemblyLocation);
 
 Env.Load();
 // логи
-builder.Host.UseSerilog((context, services, configuration) =>
+builder.Host.UseSerilog((context, services, loggerConfig) =>
 {
-    configuration
-    .ReadFrom.Configuration(context.Configuration)
-    .Enrich.FromLogContext()
-    .WriteTo.File
-        (
-            path: "./logs/log-.txt",
-            outputTemplate: "{Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz} [{Level}] {Message}{NewLine}{Exception}",
-            fileSizeLimitBytes: 100000,
-            rollOnFileSizeLimit: true
-
-        );
+    loggerConfig
+        .ReadFrom.Configuration(context.Configuration)
+        .Enrich.FromLogContext();
 });
 builder.Services.AddDbContext<MariaContext>(options =>
 {
