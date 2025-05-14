@@ -18,6 +18,16 @@ namespace GolosaTgBotApi.Services.MariaService
 
         public async Task SaveCommentAsync(Comment comment)
         {
+            if (comment.ParentId != null)
+            {
+                var parentComment = await _db.Comments
+                    .FirstOrDefaultAsync(c => c.TelegramId == comment.ParentId && c.ChatId == comment.ChatId);
+                if (parentComment == null)
+                {
+                    comment.ParentId = null;
+                    comment.Parent = null;
+                }
+            }
             await _db.AddAsync(comment);
             await _db.SaveChangesAsync();
             return;
@@ -55,6 +65,18 @@ namespace GolosaTgBotApi.Services.MariaService
                 .GroupBy(c => (c.ChatId, c.MessageThreadId.Value))
                 .ToDictionary(g => g.Key, g => g.Count());
             return commentCounts;
+        }
+
+        public async Task<Comment?> GetCommentByMediaGroupAsync(long mediaGroup, long chatId)
+        {
+            return await _db.Comments
+                .FirstOrDefaultAsync(p => p.MediaGroup == mediaGroup && p.ChatId == chatId);
+        }
+
+        public async Task UpdateCommentAsync(Comment comment)
+        {
+            _db.Comments.Update(comment);
+            await _db.SaveChangesAsync();
         }
 
         #endregion Comments

@@ -45,6 +45,7 @@ namespace GolosaTgBotApi.Services.CommentService
             {
                 return;
             }
+            await _channelService.CheckOnChannelExisting(message.Chat.Id);
             var comment = new Comment
             {
                 TelegramId = message.Id,
@@ -52,9 +53,34 @@ namespace GolosaTgBotApi.Services.CommentService
                 ChatId = message.Chat.Id,
                 MessageThreadId = message.MessageThreadId,
                 UserId = message.From.Id,
-                Text = message.Text,
+                Text = message.Text ?? message.Caption,
                 CreatedAt = DateTime.UtcNow
             };
+            if (!string.IsNullOrEmpty(message.MediaGroupId) && message.Photo != null && message.Photo.Any())
+            {
+                long mgid = long.Parse(message.MediaGroupId!);
+                var existingComment = await _mariaService.GetCommentByMediaGroupAsync(mgid, message.Chat.Id);
+                string fileId = message.Photo.Last().FileId;
+
+                if (existingComment != null)
+                {
+                    existingComment.ImagesFileId ??= new List<string>();
+                    existingComment.ImagesFileId.Add(fileId);
+                    await _mariaService.UpdateCommentAsync(existingComment);
+                    return;
+                }
+
+                comment.MediaGroup = mgid;
+                comment.ImagesFileId = new List<string> { fileId };
+            }
+            else if (message.Photo != null && message.Photo.Any())
+            {
+                // Single photo outside media group
+                string fileId = message.Photo.Last().FileId;
+                comment.ImagesFileId = new List<string> { fileId };
+            }
+            _logger.LogDebug("HandleComment for TelegramId={MessageId}, ChatId={ChatId}, ParentId={FromId}"
+                , message.Id, message.Chat.Id, message.ReplyToMessage?.MessageId);
             if (message.From.Id == systemId)
             {
                 comment.IsPost = true;

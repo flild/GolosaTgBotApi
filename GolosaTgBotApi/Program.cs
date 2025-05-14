@@ -65,3 +65,5 @@ app.UseAuthorization();
 app.MapControllers();
 
 app.Run();
+
+//todo обычные файлы, типо txt и тд. надо тоже обрабатывать

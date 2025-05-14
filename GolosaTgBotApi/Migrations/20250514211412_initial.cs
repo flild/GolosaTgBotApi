@@ -56,7 +56,7 @@ namespace GolosaTgBotApi.Migrations
                 .Annotation("MySql:CharSet", "utf8mb4");
 
             migrationBuilder.CreateTable(
-                name: "LinkedChat",
+                name: "linkedchat",
                 columns: table => new
                 {
                     Id = table.Column<long>(type: "bigint", nullable: false)
@@ -67,9 +67,9 @@ namespace GolosaTgBotApi.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_LinkedChat", x => x.Id);
+                    table.PrimaryKey("PK_linkedchat", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_LinkedChat_Channels_ChannelID",
+                        name: "FK_linkedchat_Channels_ChannelID",
                         column: x => x.ChannelID,
                         principalTable: "Channels",
                         principalColumn: "Id",
@@ -119,7 +119,10 @@ namespace GolosaTgBotApi.Migrations
                     UserId = table.Column<long>(type: "bigint", nullable: false),
                     IsPost = table.Column<bool>(type: "tinyint(1)", nullable: false),
                     IsDelete = table.Column<bool>(type: "tinyint(1)", nullable: false),
-                    Text = table.Column<string>(type: "longtext", nullable: false)
+                    Text = table.Column<string>(type: "longtext", nullable: true)
+                        .Annotation("MySql:CharSet", "utf8mb4"),
+                    MediaGroup = table.Column<long>(type: "bigint", nullable: true),
+                    ImagesFileId = table.Column<string>(type: "longtext", nullable: true)
                         .Annotation("MySql:CharSet", "utf8mb4"),
                     CreatedAt = table.Column<DateTime>(type: "datetime(6)", nullable: false)
                 },
@@ -134,17 +137,17 @@ namespace GolosaTgBotApi.Migrations
                         principalColumns: new[] { "TelegramId", "ChatId" },
                         onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
-                        name: "FK_Comments_LinkedChat_ChatId",
-                        column: x => x.ChatId,
-                        principalTable: "LinkedChat",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                    table.ForeignKey(
                         name: "FK_Comments_Users_UserId",
                         column: x => x.UserId,
                         principalTable: "Users",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_Comments_linkedchat_ChatId",
+                        column: x => x.ChatId,
+                        principalTable: "linkedchat",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
                 })
                 .Annotation("MySql:CharSet", "utf8mb4");
 
@@ -184,8 +187,8 @@ namespace GolosaTgBotApi.Migrations
                 column: "UserId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_LinkedChat_ChannelID",
-                table: "LinkedChat",
+                name: "IX_linkedchat_ChannelID",
+                table: "linkedchat",
                 column: "ChannelID",
                 unique: true);
 
@@ -215,7 +218,7 @@ namespace GolosaTgBotApi.Migrations
                 name: "Posts");
 
             migrationBuilder.DropTable(
-                name: "LinkedChat");
+                name: "linkedchat");
 
             migrationBuilder.DropTable(
                 name: "Channels");

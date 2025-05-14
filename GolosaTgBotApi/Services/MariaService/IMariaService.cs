@@ -27,6 +27,10 @@ namespace GolosaTgBotApi.Services.MariaService
         /// </summary>
         Task<Dictionary<(long ChatId, int ThreadId), int>> GetCommentCountByIds(Dictionary<long, HashSet<int>> chatsOfThreadIds);
 
+        Task<Comment?> GetCommentByMediaGroupAsync(long mediaGroup, long chatId);
+
+        Task UpdateCommentAsync(Comment comment);
+
         #endregion Comments
 
         #region User

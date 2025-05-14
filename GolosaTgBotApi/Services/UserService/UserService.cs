@@ -4,7 +4,7 @@ using GolosaTgBotApi.Services.MariaService;
 
 namespace GolosaTgBotApi.Services.UserService
 {
-    public class UserService: IUserService
+    public class UserService : IUserService
     {
         private readonly ITelegramService _telegram;
         private readonly IMariaService _mariaService;
@@ -14,6 +14,7 @@ namespace GolosaTgBotApi.Services.UserService
             _telegram = telegramService;
             _mariaService = mariaService;
         }
+
         public async Task CreateNewUser(User user)
         {
             var newUser = new Models.User();

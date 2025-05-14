@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace GolosaTgBotApi.Migrations
 {
     [DbContext(typeof(MariaContext))]
-    [Migration("20250504125740_initial")]
+    [Migration("20250514211412_initial")]
     partial class initial
     {
         /// <inheritdoc />
@@ -68,11 +68,17 @@ namespace GolosaTgBotApi.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime(6)");
 
+                    b.Property<string>("ImagesFileId")
+                        .HasColumnType("longtext");
+
                     b.Property<bool>("IsDelete")
                         .HasColumnType("tinyint(1)");
 
                     b.Property<bool>("IsPost")
                         .HasColumnType("tinyint(1)");
+
+                    b.Property<long?>("MediaGroup")
+                        .HasColumnType("bigint");
 
                     b.Property<int?>("MessageThreadId")
                         .HasColumnType("int");
@@ -84,7 +90,6 @@ namespace GolosaTgBotApi.Migrations
                         .HasColumnType("int");
 
                     b.Property<string>("Text")
-                        .IsRequired()
                         .HasColumnType("longtext");
 
                     b.Property<long>("UserId")
@@ -124,7 +129,7 @@ namespace GolosaTgBotApi.Migrations
                     b.HasIndex("ChannelID")
                         .IsUnique();
 
-                    b.ToTable("LinkedChat");
+                    b.ToTable("linkedchat", (string)null);
                 });
 
             modelBuilder.Entity("GolosaTgBotApi.Models.Post", b =>
