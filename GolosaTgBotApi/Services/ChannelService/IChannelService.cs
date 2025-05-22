@@ -7,7 +7,7 @@ namespace GolosaTgBotApi.Services.ChannelService
     {
         Task<Channel> CreateNewChannel(long chatId);
 
-        Task CheckOnChannelExisting(long id);
+        Task<Channel> CheckOnChannelExisting(long id);
 
         Task AddLinkedChat(ChatFullInfo chatInfo);
     }

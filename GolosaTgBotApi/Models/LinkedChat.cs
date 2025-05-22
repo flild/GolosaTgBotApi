@@ -6,10 +6,11 @@ namespace GolosaTgBotApi.Models
     {
         [Key]
         public long Id { get; set; }
+
         public string? Name { get; set; }
         public long? ChannelID { get; set; }
-        public Channel Channel {  get; set; }
-        public ICollection<Comment> Comments { get; set; } 
-
+        public Channel Channel { get; set; }
+        public bool IsActive { get; set; } = true;
+        public ICollection<Comment> Comments { get; set; }
     }
 }

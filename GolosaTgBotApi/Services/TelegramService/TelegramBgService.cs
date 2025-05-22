@@ -5,6 +5,7 @@ using Newtonsoft.Json;
 using System.Threading.Channels;
 using DotNetEnv;
 using GolosaTgBotApi.Models;
+using Telegram.Bot.Types.Enums;
 
 namespace GolosaTgBotApi.Services.TelegramService
 {
@@ -17,6 +18,7 @@ namespace GolosaTgBotApi.Services.TelegramService
         {
             Env.Load();
             Console.WriteLine(Environment.GetEnvironmentVariable("TELEGRAM_BOT_API_KEY"));
+
             bot = new TelegramBotClient(Environment.GetEnvironmentVariable("TELEGRAM_BOT_API_KEY"));
             _updateChannel = updateChannel;
         }
@@ -24,7 +26,6 @@ namespace GolosaTgBotApi.Services.TelegramService
         public async Task HandleUpdateAsync(ITelegramBotClient botClient, Update update, CancellationToken cancellationToken)
         {
             Console.WriteLine(JsonConvert.SerializeObject(update));
-
             await _updateChannel.Writer.WriteAsync(update);
         }
 
@@ -41,7 +42,8 @@ namespace GolosaTgBotApi.Services.TelegramService
             var cancellationToken = cts.Token;
             var receiverOptions = new ReceiverOptions
             {
-                AllowedUpdates = { }, // receive all update types
+                //todo нужно явно менять тут, чтобы получать реакции
+                AllowedUpdates = [] // receive all update types
             };
             bot.StartReceiving(
                 HandleUpdateAsync,

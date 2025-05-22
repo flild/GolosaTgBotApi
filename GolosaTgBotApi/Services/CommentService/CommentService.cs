@@ -45,7 +45,11 @@ namespace GolosaTgBotApi.Services.CommentService
             {
                 return;
             }
-            await _channelService.CheckOnChannelExisting(message.Chat.Id);
+            var channel = await _channelService.CheckOnChannelExisting(message.Chat.Id);
+            if (!channel.IsActive)
+            {
+                return;
+            }
             var comment = new Comment
             {
                 TelegramId = message.Id,

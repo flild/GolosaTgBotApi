@@ -19,7 +19,11 @@ namespace GolosaTgBotApi.Services.PostService
         public async Task HandlePost(Message post)
         {
             // Ensure channel is registered
-            await _channelService.CheckOnChannelExisting(post.Chat.Id);
+            var channel = await _channelService.CheckOnChannelExisting(post.Chat.Id);
+            if (!channel.IsActive)
+            {
+                return;
+            }
 
             // If this is part of a media group
             if (!string.IsNullOrEmpty(post.MediaGroupId))

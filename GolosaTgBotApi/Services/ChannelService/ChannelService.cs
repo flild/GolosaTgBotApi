@@ -49,13 +49,14 @@ namespace GolosaTgBotApi.Services.ChannelService
             _mariaService.UpdateChannelInfo(channel);
         }
 
-        public async Task CheckOnChannelExisting(long channelId)
+        public async Task<Channel> CheckOnChannelExisting(long channelId)
         {
             var channel = await _mariaService.GetChannelById(channelId);
             if (channel == null)
             {
-                await CreateNewChannel(channelId);
+                channel = await CreateNewChannel(channelId);
             }
+            return channel;
         }
 
         public async Task UpdateChannelInfo(Channel channel)

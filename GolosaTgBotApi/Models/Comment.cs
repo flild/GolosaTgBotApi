@@ -20,6 +20,7 @@ namespace GolosaTgBotApi.Models
         public bool IsPost { get; set; } = false;
 
         public bool IsDelete { get; set; } = false;
+        public bool IsEdit { get; set; } = false;
 
         // Содержимое
         public string? Text { get; set; } // Текст комментария

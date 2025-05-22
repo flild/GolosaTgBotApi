@@ -14,6 +14,8 @@ namespace GolosaTgBotApi.Models
         public int InChatId { get; set; }
         public string? Text { get; set; } // Текст поста
         public bool IsDelete { get; set; } = false;
+        public bool IsEdit { get; set; } = false;
+        public int MessageReactionCount { get; set; }
         public long ChannelId { get; set; }
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow; // Дата публикации
 
