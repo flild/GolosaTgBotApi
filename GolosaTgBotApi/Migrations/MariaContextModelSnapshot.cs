@@ -30,6 +30,9 @@ namespace GolosaTgBotApi.Migrations
 
                     MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<long>("Id"));
 
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("tinyint(1)");
+
                     b.Property<long?>("LinkedChatId")
                         .HasColumnType("bigint");
 
@@ -69,6 +72,9 @@ namespace GolosaTgBotApi.Migrations
                         .HasColumnType("longtext");
 
                     b.Property<bool>("IsDelete")
+                        .HasColumnType("tinyint(1)");
+
+                    b.Property<bool>("IsEdit")
                         .HasColumnType("tinyint(1)");
 
                     b.Property<bool>("IsPost")
@@ -118,6 +124,9 @@ namespace GolosaTgBotApi.Migrations
                     b.Property<long?>("ChannelID")
                         .HasColumnType("bigint");
 
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("tinyint(1)");
+
                     b.Property<string>("Name")
                         .HasColumnType("longtext");
 
@@ -152,8 +161,14 @@ namespace GolosaTgBotApi.Migrations
                     b.Property<bool>("IsDelete")
                         .HasColumnType("tinyint(1)");
 
+                    b.Property<bool>("IsEdit")
+                        .HasColumnType("tinyint(1)");
+
                     b.Property<long?>("MediaGroup")
                         .HasColumnType("bigint");
+
+                    b.Property<int>("MessageReactionCount")
+                        .HasColumnType("int");
 
                     b.Property<string>("Text")
                         .HasColumnType("longtext");

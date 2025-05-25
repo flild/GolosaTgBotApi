@@ -42,6 +42,7 @@ namespace GolosaTgBotApi.Migrations
                         .Annotation("MySql:CharSet", "utf8mb4"),
                     OwnerId = table.Column<long>(type: "bigint", nullable: true),
                     LinkedChatId = table.Column<long>(type: "bigint", nullable: true),
+                    IsActive = table.Column<bool>(type: "tinyint(1)", nullable: false),
                     UserId = table.Column<long>(type: "bigint", nullable: true)
                 },
                 constraints: table =>
@@ -63,7 +64,8 @@ namespace GolosaTgBotApi.Migrations
                         .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
                     Name = table.Column<string>(type: "longtext", nullable: true)
                         .Annotation("MySql:CharSet", "utf8mb4"),
-                    ChannelID = table.Column<long>(type: "bigint", nullable: true)
+                    ChannelID = table.Column<long>(type: "bigint", nullable: true),
+                    IsActive = table.Column<bool>(type: "tinyint(1)", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -91,6 +93,8 @@ namespace GolosaTgBotApi.Migrations
                     Text = table.Column<string>(type: "longtext", nullable: true)
                         .Annotation("MySql:CharSet", "utf8mb4"),
                     IsDelete = table.Column<bool>(type: "tinyint(1)", nullable: false),
+                    IsEdit = table.Column<bool>(type: "tinyint(1)", nullable: false),
+                    MessageReactionCount = table.Column<int>(type: "int", nullable: false),
                     ChannelId = table.Column<long>(type: "bigint", nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "datetime(6)", nullable: false)
                 },
@@ -119,6 +123,7 @@ namespace GolosaTgBotApi.Migrations
                     UserId = table.Column<long>(type: "bigint", nullable: false),
                     IsPost = table.Column<bool>(type: "tinyint(1)", nullable: false),
                     IsDelete = table.Column<bool>(type: "tinyint(1)", nullable: false),
+                    IsEdit = table.Column<bool>(type: "tinyint(1)", nullable: false),
                     Text = table.Column<string>(type: "longtext", nullable: true)
                         .Annotation("MySql:CharSet", "utf8mb4"),
                     MediaGroup = table.Column<long>(type: "bigint", nullable: true),
