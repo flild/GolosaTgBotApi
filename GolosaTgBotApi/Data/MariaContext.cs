@@ -10,6 +10,7 @@ namespace GolosaTgBotApi.Data
         public DbSet<Comment> Comments { get; set; }
         public DbSet<Channel> Channels { get; set; }
         public DbSet<LinkedChat> LinkedChats { get; set; }
+        public DbSet<DownloadedFile> FileRecords { get; set; }
 
         public MariaContext(DbContextOptions<MariaContext> options) : base(options)
         {
@@ -60,6 +61,9 @@ namespace GolosaTgBotApi.Data
                .HasIndex(c => c.Id);
             modelBuilder.Entity<Channel>()
                .HasIndex(c => c.Id);
+            modelBuilder.Entity<DownloadedFile>()
+            .HasIndex(f => f.FileId)
+            .IsUnique();
         }
     }
 }

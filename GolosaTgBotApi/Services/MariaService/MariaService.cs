@@ -181,5 +181,53 @@ namespace GolosaTgBotApi.Services.MariaService
         }
 
         #endregion Post
+
+        #region
+
+        /// <inheritdoc />
+        public string? GetDownloadedFile(string fileId)
+        {
+            // Ищем запись по fileId. Если найдена, возвращаем FilePath, иначе null.
+            var record = _db.FileRecords
+                            .AsNoTracking()
+                            .FirstOrDefault(f => f.FileId == fileId);
+            return record?.FilePath;
+        }
+
+        /// <inheritdoc />
+        public void DeleteFile(string fileId)
+        {
+            // Находим запись по fileId. Если найдена, удаляем и сохраняем изменения.
+            var record = _db.FileRecords.FirstOrDefault(f => f.FileId == fileId);
+            if (record != null)
+            {
+                _db.FileRecords.Remove(record);
+                _db.SaveChanges();
+            }
+        }
+
+        /// <inheritdoc />
+        public DownloadedFile? FindFileRecord(string fileId)
+        {
+            // Возвращаем сам объект DownloadedFile (чтобы можно было обновлять свойства).
+            return _db.FileRecords.FirstOrDefault(f => f.FileId == fileId);
+        }
+
+        /// <inheritdoc />
+        public void UpdateFile(DownloadedFile fileRecord)
+        {
+            // Помечаем объект как модифицированный и сохраняем.
+            _db.FileRecords.Update(fileRecord);
+            _db.SaveChanges();
+        }
+
+        /// <inheritdoc />
+        public void AddFile(DownloadedFile newFileRecord)
+        {
+            _db.FileRecords.Add(newFileRecord);
+            _db.SaveChanges();
+        }
+
+        #endregion
     }
 }

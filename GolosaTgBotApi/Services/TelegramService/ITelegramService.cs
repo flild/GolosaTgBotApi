@@ -17,5 +17,7 @@ namespace GolosaTgBotApi.Services.TelegramService
         public Task<bool> IsUserAdministrator(long chatId, long userId);
 
         public Task TestAsync();
+
+        Task<MemoryStream> GetFileById(string fileId);
     }
 }
