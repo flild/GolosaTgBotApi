@@ -9,7 +9,7 @@ using GolosaTgBotApi.Services.MariaService;
 using GolosaTgBotApi.Services.TelegramService;
 using ImageMagick;
 
-namespace GolosaTgBotApi.Services
+namespace GolosaTgBotApi.Services.FileService
 {
     public class FileService
     {
