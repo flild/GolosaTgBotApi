@@ -5,9 +5,9 @@ namespace GolosaTgBotApi.Services.PostService
 {
     public interface IPostService
     {
-        public Task<List<PostPreviewDto>> GetPosts(int limit, int offset);
         public Task LinkPostAndMessage(int? postId, int postIdInChat, long ChatId);
-        public Task<Post> GetPostById(long id);
+        Task<IEnumerable<PostPreviewDto>> GetPosts(int limit, int offset);
+        Task<PostDto> GetPostById(long id);
 
     }
 }

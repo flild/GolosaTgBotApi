@@ -15,13 +15,38 @@ namespace GolosaTgBotApi.Controllers
         {
             _commentService = commentService;
         }
-        // POST: api/comment/post
-        [HttpPost]
-        [Route("post")]
-        public async Task<ActionResult<PostPreviewDto>> GetCommentsByPostId([FromBody] CommentsParams parameters)
+        /// <summary>
+        /// Получить комментарии к посту с пагинацией
+        /// </summary>
+        /// <param name="postId">Идентификатор поста</param>
+        /// <param name="limit">Количество комментариев на странице</param>
+        /// <param name="offset">Смещение</param>
+        [HttpGet]
+        public async Task<ActionResult<IEnumerable<CommentDto>>> GetCommentsForPost(
+            long postId,
+            [FromQuery] int limit = 10,
+            [FromQuery] int offset = 0)
         {
-            var posts = await _commentService.GetCommentsByPostId(parameters.PostId,parameters.Limit, parameters.Offset);
-            return Ok(posts);
+            var comments = await _commentService.GetCommentsByPostId(postId, limit, offset);
+            return Ok(comments);
+        }
+
+        /// <summary>
+        /// Получить ответы (ветку) к комментарию с пагинацией
+        /// </summary>
+        /// <param name="postId">Идентификатор поста (для контекста маршрута)</param>
+        /// <param name="commentId">Идентификатор родительского комментария</param>
+        /// <param name="limit">Количество ответов на странице</param>
+        /// <param name="offset">Смещение</param>
+        [HttpGet("{commentId}/replies")]
+        public async Task<ActionResult<IEnumerable<CommentDto>>> GetRepliesForComment(
+            long postId,
+            long commentId,
+            [FromQuery] int limit = 10,
+            [FromQuery] int offset = 0)
+        {
+            var replies = await _commentService.GetRepliesByCommentId(commentId, limit, offset);
+            return Ok(replies);
         }
         public class CommentsParams
         {

@@ -15,7 +15,7 @@ namespace GolosaTgBotApi.Services.PostService
             _logger = logger;
         }
 
-        public async Task<List<PostPreviewDto>> GetPosts(int limit, int offset)
+        public async Task<IEnumerable<PostPreviewDto>> GetPosts(int limit, int offset)
         {
             var posts = await _mariaService.GetLatestsPosts(limit, offset);
             var channelIds = posts.Select(p => p.ChannelId).Distinct().ToList();
@@ -53,7 +53,7 @@ namespace GolosaTgBotApi.Services.PostService
             return result;
         }
 
-        public async Task<Post> GetPostById(long id)
+        public async Task<PostDto> GetPostById(long id)
         {
             return await _mariaService.GetPostById(id);
         }

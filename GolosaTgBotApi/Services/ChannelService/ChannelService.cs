@@ -35,18 +35,20 @@ namespace GolosaTgBotApi.Services.ChannelService
 
         public async Task AddLinkedChat(ChatFullInfo chatInfo)
         {
-            var channel = await _mariaService.GetChannelById(chatInfo.LinkedChatId ?? 0);
-            if (channel == null)
+            var linkedChannel = await _mariaService.GetChannelById(chatInfo.LinkedChatId ?? 0);
+            if (linkedChannel == null)
             {
-                channel = await CreateNewChannel(chatInfo.LinkedChatId ?? 0);
+                linkedChannel = await CreateNewChannel(chatInfo.LinkedChatId ?? 0);
             }
-            LinkedChat chat = new LinkedChat();
-            chat.Name = chatInfo.Title;
-            chat.ChannelID = channel.Id;
-            chat.Id = chatInfo.Id;
-            channel.LinkedChat = chat;
-            channel.LinkedChatId = chatInfo.Id;
-            _mariaService.UpdateChannelInfo(channel);
+            if (chatInfo.LinkedChatId != linkedChannel.LinkedChatId)
+            {
+                LinkedChat chat = new LinkedChat();
+                chat.Name = chatInfo.Title;
+                chat.ChannelID = linkedChannel.Id;
+                linkedChannel.LinkedChat = chat;
+                linkedChannel.LinkedChatId = chatInfo.Id;
+                _mariaService.UpdateChannelInfo(linkedChannel);
+            }
         }
 
         public async Task<Channel> CheckOnChannelExisting(long channelId)

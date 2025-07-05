@@ -100,7 +100,7 @@ namespace GolosaTgBotApi.Services.MariaService
 
         public async Task<Channel?> GetChannelById(long ChannelId)
         {
-            return await _db.Channels.FirstOrDefaultAsync(c => c.Id == ChannelId);
+            return await _db.Channels.Include(c => c.LinkedChat).FirstOrDefaultAsync(c => c.Id == ChannelId);
         }
 
         public async Task<List<Channel>> GetChannelsByIds(List<long> channelIds)
