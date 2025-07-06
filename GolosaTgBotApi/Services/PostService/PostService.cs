@@ -1,5 +1,6 @@
 ﻿using GolosaTgBotApi.Models;
 using GolosaTgBotApi.Models.Dtos;
+using GolosaTgBotApi.Services.FileService;
 using GolosaTgBotApi.Services.MariaService;
 
 namespace GolosaTgBotApi.Services.PostService
@@ -7,29 +8,26 @@ namespace GolosaTgBotApi.Services.PostService
     public class PostService : IPostService
     {
         private readonly IMariaService _mariaService;
+        private readonly IFileService _fileService;
         private readonly ILogger<PostService> _logger;
 
-        public PostService(IMariaService mariaService, ILogger<PostService> logger)
+        public PostService(IMariaService mariaService, IFileService fileService, ILogger<PostService> logger)
         {
             _mariaService = mariaService;
+            _fileService = fileService;
             _logger = logger;
         }
 
         public async Task<IEnumerable<PostPreviewDto>> GetPosts(int limit, int offset)
         {
             var posts = await _mariaService.GetLatestsPosts(limit, offset);
-            var channelIds = posts.Select(p => p.ChannelId).Distinct().ToList();
-            var channelsDict = (await _mariaService.GetChannelsByIds(channelIds))
-                .ToDictionary(ch => ch.Id);
 
             // Уникальная структура для хранения (ChatId, ThreadId)
             var chatsOfThreadIds = new Dictionary<long, HashSet<int>>();
             foreach (var post in posts)
             {
-                if (!channelsDict.TryGetValue(post.ChannelId, out var channel) || channel.LinkedChatId == null)
-                    continue;
 
-                var chatId = channel.LinkedChatId.Value;
+                var chatId = post.Channel.LinkedChatId.Value;
                 if (!chatsOfThreadIds.ContainsKey(chatId))
                     chatsOfThreadIds[chatId] = new HashSet<int>();
 
@@ -41,19 +39,34 @@ namespace GolosaTgBotApi.Services.PostService
 
             // Формирование итогового результата
             var result = posts
-                .Where(post => channelsDict[post.ChannelId].LinkedChatId != null)
-                .Select(post => new PostPreviewDto
+                .Where(post => post.Channel.LinkedChatId != null)
+                .Select(post =>
                 {
-                    ChannelName = channelsDict[post.ChannelId].Title,
-                    CommentCount = commentsCountDict.GetValueOrDefault((channelsDict[post.ChannelId].LinkedChatId ?? 0, post.InChatId), 0),
-                    Post = post
+                    // Берём список fileId из сущности
+                    var fileIds = post.ImagesFileId ?? new List<string>();
+
+                    // Конвертируем fileId в публичные URL
+                    var urls =  fileIds
+                        .Select(id => _fileService.GetOrDownloadAndGetImageUrlAsync(id).Result)
+                        .ToList();
+
+                    return new PostPreviewDto
+                    {
+                        Id = post.Id,
+                        Text = post.Text,
+                        ChannelName = post.Channel.Title,
+                        ChannelAvatar = "",  //todo подставить аватар канала
+                        CommentsCount = commentsCountDict.GetValueOrDefault((post.Channel.LinkedChatId!.Value, post.InChatId), 0),
+                        CreatedAt = post.CreatedAt,
+                        ImageUrls = urls
+                    };
                 })
                 .ToList();
 
             return result;
         }
 
-        public async Task<PostDto> GetPostById(long id)
+        public async Task<Post> GetPostById(long id)
         {
             return await _mariaService.GetPostById(id);
         }

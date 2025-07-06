@@ -144,15 +144,17 @@ namespace GolosaTgBotApi.Services.MariaService
 
         public async Task<Post> GetPostById(long id)
         {
-            return await _db.Posts.FirstOrDefaultAsync(p => p.Id == id);
+            return await _db.Posts.Include(p => p.Channel).FirstOrDefaultAsync(p => p.Id == id);
         }
 
         public async Task<List<Post>> GetLatestsPosts(int limit, int offset)
         {
             return await _db.Posts
+                .AsNoTracking()
                 .OrderByDescending(p => p.CreatedAt)
                 .Skip(offset)
                 .Take(limit)
+                .Include(p => p.Channel)
                 .ToListAsync();
         }
 
@@ -185,13 +187,13 @@ namespace GolosaTgBotApi.Services.MariaService
         #region
 
         /// <inheritdoc />
-        public string? GetDownloadedFile(string fileId)
+        public DownloadedFile? GetDownloadedFile(string fileId)
         {
             // Ищем запись по fileId. Если найдена, возвращаем FilePath, иначе null.
             var record = _db.FileRecords
                             .AsNoTracking()
                             .FirstOrDefault(f => f.FileId == fileId);
-            return record?.FilePath;
+            return record;
         }
 
         /// <inheritdoc />
@@ -204,13 +206,6 @@ namespace GolosaTgBotApi.Services.MariaService
                 _db.FileRecords.Remove(record);
                 _db.SaveChanges();
             }
-        }
-
-        /// <inheritdoc />
-        public DownloadedFile? FindFileRecord(string fileId)
-        {
-            // Возвращаем сам объект DownloadedFile (чтобы можно было обновлять свойства).
-            return _db.FileRecords.FirstOrDefault(f => f.FileId == fileId);
         }
 
         /// <inheritdoc />

@@ -120,17 +120,13 @@ namespace GolosaTgBotApi.Services.MariaService
         /// <summary>
         /// Возвращает относительный путь к WebP-файлу для данного fileId, либо null, если записи нет.
         /// </summary>
-        string? GetDownloadedFile(string fileId);
+        DownloadedFile? GetDownloadedFile(string fileId);
 
         /// <summary>
         /// Удаляет запись с указанным fileId из базы.
         /// </summary>
         void DeleteFile(string fileId);
 
-        /// <summary>
-        /// Находит и возвращает объект DownloadedFile для указанного fileId, либо null, если не найден.
-        /// </summary>
-        DownloadedFile? FindFileRecord(string fileId);
 
         /// <summary>
         /// Обновляет существующую запись DownloadedFile (LastAccessedAt, AccessCount и т. п.).

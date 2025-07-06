@@ -11,12 +11,13 @@ using ImageMagick;
 
 namespace GolosaTgBotApi.Services.FileService
 {
-    public class FileService
+    public class FileService : IFileService
     {
         private const int QualityParam = 85;
         private readonly string _storagePath;
         private readonly IMariaService _mariaService;
         private readonly ITelegramService _telegram;
+        private readonly string _baseUrl;
 
         public FileService(string storagePath, IMariaService mariaService, ITelegramService telegramService)
         {
@@ -29,102 +30,83 @@ namespace GolosaTgBotApi.Services.FileService
             }
         }
 
-        /// <summary>
-        /// Всегда возвращает Stream с изображением в формате JPEG:
-        /// 1. Проверяет, есть ли файл в БД.
-        /// 2. Если есть:
-        ///    – читает WebP-изображение из хранилища, конвертирует его в JPEG,
-        ///      обновляет в БД LastAccessedAt и AccessCount и возвращает поток.
-        /// 3. Если нет:
-        ///    – запрашивает файл у Telegram через GetFileById,
-        ///      сжимает и сохраняет его как WebP в хранилище,
-        ///      добавляет запись в таблицу FileRecords,
-        ///      конвертирует тот же загруженный в памяти MagickImage в JPEG и возвращает поток.
-        /// </summary>
-        /// <param name="fileId">ID файла (например, из Telegram API).</param>
-        /// <returns>Stream с изображением в формате JPEG.</returns>
-        public async Task<Stream> GetOrDownloadAndGetImageStreamAsync(string fileId)
+
+        public async Task<string> GetOrDownloadAndGetImageUrlAsync(string fileId)
         {
-            // 1. Проверяем, существует ли в БД запись о файле.
-            var existingRecord = _mariaService.GetDownloadedFile(fileId);
-            if (existingRecord != null)
+            // Генерируем относительные пути
+            string md5Hash = GetMd5Hash(fileId);
+            string webpRelPath = GeneratePathFromHash(md5Hash, fileId);
+            string jpegRelPath = Path.ChangeExtension(webpRelPath, ".jpg");
+
+            string webpFullPath = Path.Combine(_storagePath, webpRelPath);
+            string jpegFullPath = Path.Combine(_storagePath, jpegRelPath);
+
+            DownloadedFile? record = _mariaService.GetDownloadedFile(fileId);
+
+            if (record != null && File.Exists(webpFullPath))
             {
-                // Файл уже есть в БД: existingRecord содержит относительный путь, например "af/15/12345.webp"
-                string webpRelativePath = existingRecord;
-                string webpFullPath = Path.Combine(_storagePath, webpRelativePath);
+                // Обновляем статистику
+                record.LastAccessedAt = DateTime.UtcNow;
+                record.AccessCount += 1;
+                _mariaService.UpdateFile(record);
 
-                if (!File.Exists(webpFullPath))
-                {
-                    // На всякий случай: если файл по указанному пути удалён/отсутствует,
-                    // удалим запись из БД и пойдём вниз по алгоритму повторной загрузки.
-                    _mariaService.DeleteFile(fileId);
-                }
-                else
-                {
-                    // 1.a. Обновляем статистику доступа:
-                    var fileRecord = _mariaService.FindFileRecord(fileId);
-                    fileRecord.LastAccessedAt = DateTime.UtcNow;
-                    fileRecord.AccessCount += 1;
-                    _mariaService.UpdateFile(fileRecord);
+                // Если JPEG уже существует, сразу возвращаем ссылку
+                if (File.Exists(jpegFullPath))
+                    return BuildUrl(jpegRelPath);
 
-                    // 1.b. Открываем WebP и конвертируем в JPEG в MemoryStream:
-                    using var webpImage = new MagickImage(webpFullPath);
-                    webpImage.Format = MagickFormat.Jpeg;
+                // Конвертируем WebP в JPEG
+                using var img = new MagickImage(webpFullPath);
+                img.Format = MagickFormat.Jpeg;
+                img.Quality = QualityParam;
+                EnsureDirectoryExists(jpegFullPath);
+                await img.WriteAsync(jpegFullPath);
 
-                    var outputStream = new MemoryStream();
-                    await webpImage.WriteAsync(outputStream);
-                    outputStream.Position = 0;
-                    return outputStream;
-                }
+                return BuildUrl(jpegRelPath);
             }
 
-            // 2. Файл отсутствует в БД, или файл в хранилище отсутствует: загружаем из Telegram.
-            // Получаем «сырую» картинку из Telegram:
-            using var downloadedStream = await _telegram.GetFileById(fileId);
-            downloadedStream.Position = 0;
+            // Файл не найден или отсутствует в хранилище: загружаем из Telegram
+            using var downloaded = await _telegram.GetFileById(fileId);
+            downloaded.Position = 0;
 
-            // 2.a. Загружаем изображение в MagickImage из скачанного потока:
-            using var image = new MagickImage(downloadedStream);
-
-            // 2.b. Сжимаем без потери качества (QualityParam – например, 85–90):
+            using var image = new MagickImage(downloaded);
             image.Quality = QualityParam;
 
-            // 2.c. Генерируем путь для сохранения WebP: MD5-хэш от fileId + вложенные папки:
-            string md5Hash = GetMd5Hash(fileId);
-            string relativePath = GeneratePathFromHash(md5Hash, fileId); // Например: "af/15/12345.webp"
-            string webpFullSavePath = Path.Combine(_storagePath, relativePath);
-
-            // 2.d. Убедимся, что директория существует:
-            string? dir = Path.GetDirectoryName(webpFullSavePath);
-            if (!string.IsNullOrEmpty(dir) && !Directory.Exists(dir))
-            {
-                Directory.CreateDirectory(dir);
-            }
-
-            // 2.e. Сохраняем изображение как WebP на диск:
+            // Сохраняем WebP
+            EnsureDirectoryExists(webpFullPath);
             image.Format = MagickFormat.WebP;
-            await image.WriteAsync(webpFullSavePath);
+            await image.WriteAsync(webpFullPath);
 
-            // 2.f. Добавляем запись в БД:
-            var newFileRecord = new DownloadedFile
+            // Сохраняем запись в БД
+            var newRecord = new DownloadedFile
             {
                 FileId = fileId,
-                FilePath = relativePath,
+                FilePath = webpRelPath,
                 CreatedAt = DateTime.UtcNow,
                 LastAccessedAt = DateTime.UtcNow,
                 AccessCount = 1
             };
-            _mariaService.AddFile(newFileRecord);
+            _mariaService.AddFile(newRecord);
 
-            // 2.g. Конвертируем тот же MagickImage (в памяти) в JPEG и возвращаем Stream:
-            //    (для этого нужно сбросить формат обратно в JPEG)
+            // Конвертируем и сохраняем JPEG
             image.Format = MagickFormat.Jpeg;
-            var jpegStream = new MemoryStream();
-            await image.WriteAsync(jpegStream);
-            jpegStream.Position = 0;
-            return jpegStream;
+            EnsureDirectoryExists(jpegFullPath);
+            await image.WriteAsync(jpegFullPath);
+
+            return BuildUrl(jpegRelPath);
         }
 
+        private string BuildUrl(string relativePath)
+        {
+            // Преобразуем пути к URL (замена обратных слэшей)
+            string urlPath = relativePath.Replace(Path.DirectorySeparatorChar, '/');
+            return $"{_baseUrl}/{urlPath}";
+        }
+        private static void EnsureDirectoryExists(string fullPath)
+        {
+            var dir = Path.GetDirectoryName(fullPath);
+            if (!string.IsNullOrEmpty(dir) && !Directory.Exists(dir))
+                Directory.CreateDirectory(dir);
+        }
         private static string GetMd5Hash(string input)
         {
             using var md5 = MD5.Create();
