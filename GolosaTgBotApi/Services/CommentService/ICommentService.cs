@@ -7,7 +7,7 @@ namespace GolosaTgBotApi.Services.CommentService
     public interface ICommentService
     {
         public Task HandleComment(Message message);
-        Task<IEnumerable<CommentDto>> GetCommentsByPostId(long postId, int limit, int offset);
-        Task<IEnumerable<CommentDto>> GetRepliesByCommentId(long commentId, int limit, int offset);
+        Task<IEnumerable<Comment>> GetCommentsByPostId(long postId, int limit, int offset);
+        Task<IEnumerable<Comment>> GetRepliesByCommentId(long commentId, int limit, int offset);
     }
 }
