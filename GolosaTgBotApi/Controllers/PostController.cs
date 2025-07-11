@@ -1,4 +1,5 @@
-﻿using GolosaTgBotApi.Models.Dtos;
+﻿using GolosaTgBotApi.Models;
+using GolosaTgBotApi.Models.Dtos;
 using GolosaTgBotApi.Services.PostService;
 using Microsoft.AspNetCore.Mvc;
 
@@ -34,7 +35,7 @@ namespace GolosaTgBotApi.Controllers
         /// </summary>
         /// <param name="id">Идентификатор поста</param>
         [HttpGet("{id}")]
-        public async Task<ActionResult<PostDto>> GetPostById(long id)
+        public async Task<ActionResult<Post>> GetPostById(long id)
         {
             var post = await _postService.GetPostById(id);
             if (post == null)
