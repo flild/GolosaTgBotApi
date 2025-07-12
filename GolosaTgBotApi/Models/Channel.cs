@@ -12,6 +12,5 @@ namespace GolosaTgBotApi.Models
         public long? LinkedChatId { get; set; }
         public LinkedChat LinkedChat { get; set; }
         public bool IsActive { get; set; } = true;
-        public ICollection<Post>? Posts { get; set; }
     }
 }

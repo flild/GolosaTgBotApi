@@ -14,14 +14,13 @@ namespace GolosaTgBotApi.Services.FileService
     public class FileService : IFileService
     {
         private const int QualityParam = 85;
-        private readonly string _storagePath;
+        private readonly string _storagePath = "files";
         private readonly IMariaService _mariaService;
         private readonly ITelegramService _telegram;
         private readonly string _baseUrl;
 
-        public FileService(string storagePath, IMariaService mariaService, ITelegramService telegramService)
+        public FileService(IMariaService mariaService, ITelegramService telegramService)
         {
-            _storagePath = storagePath;
             _mariaService = mariaService;
             _telegram = telegramService;
             if (!Directory.Exists(_storagePath))

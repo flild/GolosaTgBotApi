@@ -45,7 +45,7 @@ namespace GolosaTgBotApi.Controllers
             [FromQuery] int limit = 10,
             [FromQuery] int offset = 0)
         {
-            //var replies = await _commentService.GetRepliesByCommentId(commentId, limit, offset);
+            var replies = await _commentService.GetCommentsByPostId(commentId, limit, offset);
             return Ok(replies);
         }
         public class CommentsParams

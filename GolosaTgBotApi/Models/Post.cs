@@ -18,8 +18,6 @@ namespace GolosaTgBotApi.Models
         public int MessageReactionCount { get; set; }
         public long ChannelId { get; set; }
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow; // Дата публикации
-
-        [NotMapped]
         public Channel Channel { get; set; }
     }
 }

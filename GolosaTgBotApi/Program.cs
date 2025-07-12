@@ -14,6 +14,7 @@ using Serilog;
 using Serilog.Debugging;
 using GolosaTgBotApi.Services.MessageHandlerService;
 using System.Reflection;
+using GolosaTgBotApi.Services.FileService;
 
 var builder = WebApplication.CreateBuilder(args);
 string assemblyLocation = Assembly.GetExecutingAssembly().Location;
@@ -48,6 +49,7 @@ builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IChannelService, ChannelService>();
 builder.Services.AddScoped<ITelegramService, TelegramService>();
 builder.Services.AddScoped<IPostService, PostService>();
+builder.Services.AddScoped<IFileService,  FileService>();
 builder.Services.AddControllers();
 
 var app = builder.Build();

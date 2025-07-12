@@ -184,7 +184,7 @@ namespace GolosaTgBotApi.Services.MariaService
 
         #endregion Post
 
-        #region
+        #region File
 
         /// <inheritdoc />
         public DownloadedFile? GetDownloadedFile(string fileId)

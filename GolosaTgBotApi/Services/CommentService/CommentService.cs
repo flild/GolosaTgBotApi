@@ -116,12 +116,6 @@ namespace GolosaTgBotApi.Services.CommentService
             var comments = await _mariaService.GetCommentsByTreadId(post.InChatId, post.Channel.LinkedChatId ?? 0, limit, offset);
             return comments;
         }
-        public async Task<IEnumerable<Comment>> GetRepliesByCommentId(int commentId, long postId, int limit, int offset)
-        {
-            var post = await _mariaService.GetPostById(postId);
-            var comments = await _mariaService.GetCommentsByTreadId(commentId, post.Channel.LinkedChatId??0, limit, offset);
-            return comments;
-        }
 
         private async Task HandleGolosaStartCommand(Message message)
         {

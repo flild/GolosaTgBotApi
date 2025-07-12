@@ -21,7 +21,8 @@ namespace GolosaTgBotApi.Controllers
         [Route("test")]
         public async Task<ActionResult> Test()
         {
-            _telegram.TestAsync();
+            var res = await _telegram.GetFileById("AgACAgIAAx0CTxROOQAD5WgyM9iDNAM41tkd1dC2CqprRuibAAJE-DEb6c2RSRY09aAdHRlWAQADAgADeQADNgQ");
+            Console.WriteLine(res.Length);
             return Ok();
         }
     }
