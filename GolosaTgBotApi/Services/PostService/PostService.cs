@@ -42,14 +42,17 @@ namespace GolosaTgBotApi.Services.PostService
                 .Where(post => post.Channel.LinkedChatId != null)
                 .Select(post =>
                 {
-                    // Берём список fileId из сущности
-                    var fileIds = post.ImagesFileId ?? new List<string>();
+                    List<string> urls = new List<string>();
+                    if (post.ImagesFileId.Any())
+                    {
+                        // Берём список fileId из сущности
+                        var fileIds = post.ImagesFileId;
 
-                    // Конвертируем fileId в публичные URL
-                    var urls =  fileIds
-                        .Select(id => _fileService.GetOrDownloadAndGetImageUrlAsync(id).Result)
-                        .ToList();
-
+                        // Конвертируем fileId в публичные URL
+                        urls = fileIds
+                            .Select(id => _fileService.GetOrDownloadAndGetImageUrlAsync(id).Result)
+                            .ToList();
+                    }
                     return new PostPreviewDto
                     {
                         Id = post.Id,
@@ -66,9 +69,28 @@ namespace GolosaTgBotApi.Services.PostService
             return result;
         }
 
-        public async Task<Post> GetPostById(long id)
+        public async Task<PostPreviewDto> GetPostById(long id)
         {
-            return await _mariaService.GetPostById(id);
+            var post = await _mariaService.GetPostById(id);
+            var postDto = new PostPreviewDto();
+            postDto.Id = post.Id;
+            postDto.Text = post.Text;
+            postDto.ChannelName = post.Channel.Title;
+            postDto.ChannelAvatar = "";
+            postDto.CommentsCount = 0;
+            postDto.CreatedAt = post.CreatedAt;
+            if(post.ImagesFileId.Any())
+            {
+                // Берём список fileId из сущности
+                var fileIds = post.ImagesFileId ?? new List<string>();
+
+                // Конвертируем fileId в публичные URL
+                var urls = fileIds
+                    .Select(id => _fileService.GetOrDownloadAndGetImageUrlAsync(id).Result)
+                    .ToList();
+            }
+
+            return postDto;
         }
 
         public async Task LinkPostAndMessage(int? postId, int postIdInChat, long ChatId)

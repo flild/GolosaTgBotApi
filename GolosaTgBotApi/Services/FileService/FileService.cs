@@ -30,7 +30,7 @@ namespace GolosaTgBotApi.Services.FileService
         }
 
 
-        public async Task<string> GetOrDownloadAndGetImageUrlAsync(string fileId)
+        public async Task<string?> GetOrDownloadAndGetImageUrlAsync(string fileId)
         {
             // Генерируем относительные пути
             string md5Hash = GetMd5Hash(fileId);
@@ -65,6 +65,10 @@ namespace GolosaTgBotApi.Services.FileService
 
             // Файл не найден или отсутствует в хранилище: загружаем из Telegram
             using var downloaded = await _telegram.GetFileById(fileId);
+            if (downloaded == null)
+            {
+                return null;
+            }
             downloaded.Position = 0;
 
             using var image = new MagickImage(downloaded);

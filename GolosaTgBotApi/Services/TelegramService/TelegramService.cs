@@ -64,10 +64,19 @@ namespace GolosaTgBotApi.Services.TelegramService
             }
         }
 
-        public async Task<MemoryStream> GetFileById(string fileId)
+        public async Task<MemoryStream?> GetFileById(string fileId)
         {
             var stream = new MemoryStream();
-            await bot.DownloadFile(fileId, stream);
+            try
+            {
+                var file = await bot.GetFile(fileId);
+                await bot.DownloadFile(file.FilePath, stream);
+            }
+            catch (Exception ex)
+            {
+                stream = null;
+            }
+
             return stream;
         }
 
